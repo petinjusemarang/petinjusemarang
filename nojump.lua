@@ -5,7 +5,7 @@ game:service'Players'.LocalPlayer.Idled:connect(function()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- Skrip untuk melompat dengan auto loop
+-- Skrip untuk tidak melompat dengan auto loop
 while true do
     local args = {
         [1] = "Enter",
@@ -33,8 +33,7 @@ while true do
     end
 
     while game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") and game.Players.LocalPlayer.Character.Humanoid.Health > 0 do
-        game.Players.LocalPlayer.Character.Humanoid.Jump = true
-        wait(0.1)
+        wait(0.1) -- Menunggu tanpa melompat
     end
 
     wait(20)
