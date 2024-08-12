@@ -53,25 +53,45 @@ statusLabel.TextSize = 20
 
 -- Status kontrol
 local isPaused = false
+local currentScript = nil
+
+-- Fungsi untuk mengeksekusi script dan menghentikan script yang sudah ada
+local function executeScript(url)
+    if currentScript then
+        pcall(function() currentScript:Disconnect() end)
+    end
+
+    if not isPaused then
+        local scriptFunc = loadstring(game:HttpGet(url))
+        currentScript = scriptFunc()
+    end
+end
+
+-- Fungsi untuk menghentikan eksekusi script
+local function stopScript()
+    if currentScript then
+        pcall(function() currentScript:Disconnect() end)
+        currentScript = nil
+    end
+end
 
 -- Fungsi Tombol
 jumpButton.MouseButton1Click:Connect(function()
-    if not isPaused then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"))()
-        statusLabel.Text = "Jump script executed"
-    end
+    stopScript()
+    executeScript("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua")
+    statusLabel.Text = "Jump script executed"
 end)
 
 noJumpButton.MouseButton1Click:Connect(function()
-    if not isPaused then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"))()
-        statusLabel.Text = "No Jump script executed"
-    end
+    stopScript()
+    executeScript("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua")
+    statusLabel.Text = "No Jump script executed"
 end)
 
 pauseButton.MouseButton1Click:Connect(function()
     isPaused = not isPaused
     if isPaused then
+        stopScript()
         statusLabel.Text = "Script Paused"
         pauseButton.Text = "Resume"
     else
