@@ -3,7 +3,7 @@ local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
 local jumpButton = Instance.new("TextButton")
 local noJumpButton = Instance.new("TextButton")
-local pauseButton = Instance.new("TextButton")
+local teleportButton = Instance.new("TextButton")
 local statusLabel = Instance.new("TextLabel")
 
 -- Menyusun GUI
@@ -33,14 +33,14 @@ noJumpButton.Text = "No Jump"
 noJumpButton.TextColor3 = Color3.new(1, 1, 1)
 noJumpButton.TextSize = 24
 
-pauseButton.Parent = frame
-pauseButton.BackgroundColor3 = Color3.new(0.5, 0.5, 0.5)
-pauseButton.Position = UDim2.new(0.1, 0, 0.75, 0)
-pauseButton.Size = UDim2.new(0, 160, 0, 40)
-pauseButton.Font = Enum.Font.SourceSans
-pauseButton.Text = "Pause"
-pauseButton.TextColor3 = Color3.new(1, 1, 1)
-pauseButton.TextSize = 24
+teleportButton.Parent = frame
+teleportButton.BackgroundColor3 = Color3.new(0.5, 0.5, 0.5) -- Warna abu-abu
+teleportButton.Position = UDim2.new(0.1, 0, 0.75, 0)
+teleportButton.Size = UDim2.new(0, 160, 0, 40)
+teleportButton.Font = Enum.Font.SourceSans
+teleportButton.Text = "Teleport"
+teleportButton.TextColor3 = Color3.new(1, 1, 1)
+teleportButton.TextSize = 24
 
 statusLabel.Parent = frame
 statusLabel.BackgroundColor3 = Color3.new(0.196, 0.196, 0.196)
@@ -88,16 +88,10 @@ noJumpButton.MouseButton1Click:Connect(function()
     statusLabel.Text = "No Jump script executed"
 end)
 
-pauseButton.MouseButton1Click:Connect(function()
-    isPaused = not isPaused
-    if isPaused then
-        stopScript()
-        statusLabel.Text = "Script Paused"
-        pauseButton.Text = "Resume"
-    else
-        statusLabel.Text = "Choose an option:"
-        pauseButton.Text = "Pause"
-    end
+teleportButton.MouseButton1Click:Connect(function()
+    stopScript()
+    executeScript("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/teleport.lua")
+    statusLabel.Text = "Teleport script executed"
 end)
 
 -- Anti AFK
