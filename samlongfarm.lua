@@ -80,8 +80,8 @@ end
 
 -- Tombol Fungsi
 jokiUangButton.MouseButton1Click:Connect(function()
-    local script_key = "296293768636661771"
-    executeScript("https://getsades.net/Module/t.lua") -- Menjalankan skrip joki uang
+     local SDS_Key = "5068737274660.51550245310"
+    executeScript("https://getsades.net/Module/35ddd044134d30e900000000e0c8f472b82e038b1df8ddf731b013819834670d1e41d27ec33dca7a1d5b42f7ddcd9e5a744867894264856586bkcx.lua") -- Menjalankan skrip joki uang
     screenGui:Destroy() -- Menghilangkan GUI setelah dieksekusi
 end)
 
