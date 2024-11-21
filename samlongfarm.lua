@@ -66,6 +66,11 @@ statusLabel.Font = Enum.Font.Gotham
 statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 statusLabel.TextSize = 16
 
+-- Fungsi untuk menyembunyikan GUI
+local function hideGUI()
+    mainFrame.Visible = false -- Menyembunyikan GUI
+end
+
 -- Fungsi untuk mengeksekusi script
 local function executeScript(script)
     local success, response = pcall(function()
@@ -78,14 +83,24 @@ local function executeScript(script)
     end
 end
 
--- Tombol Fungsi
+-- Tombol Fungsi Joki Uang
 jokiUangButton.MouseButton1Click:Connect(function()
-     local SDS_Key = "5068737274660.51550245310"
-    executeScript("https://getsades.net/Module/35ddd044134d30e900000000e0c8f472b82e038b1df8ddf731b013819834670d1e41d27ec33dca7a1d5b42f7ddcd9e5a744867894264856586bkcx.lua") -- Menjalankan skrip joki uang
-    screenGui:Destroy() -- Menghilangkan GUI setelah dieksekusi
+    hideGUI() -- Menyembunyikan GUI
+    -- Script khusus untuk Joki Uang
+    script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
+
+    getgenv().beta = false -- Versi beta off
+    getgenv().autoFarmValue = true -- AutoFarm aktif
+    getgenv().alwaysRojod = true -- Always Rojod
+    getgenv().timeToTeleports = 45
+    getgenv().timeToShad = 1
+    getgenv().timeToRecall = 1
+
+    loadstring(game:HttpGet("https://getsades.net"))() -- Eksekusi script
 end)
 
+-- Tombol Fungsi Joki Minigame
 jokiMinigameButton.MouseButton1Click:Connect(function()
+    hideGUI() -- Menyembunyikan GUI
     executeScript("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmini.lua") -- Menjalankan skrip joki minigame
-    screenGui:Destroy() -- Menghilangkan GUI setelah dieksekusi
 end)
