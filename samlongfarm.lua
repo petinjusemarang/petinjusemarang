@@ -89,7 +89,7 @@ jokiUangButton.MouseButton1Click:Connect(function()
     -- Script khusus untuk Joki Uang
     script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
 
-    getgenv().beta = false -- Versi beta off
+    getgenv().beta = true -- Versi beta off
     getgenv().autoFarmValue = true -- AutoFarm aktif
     getgenv().alwaysRojod = true -- Always Rojod
     getgenv().timeToTeleports = 45
