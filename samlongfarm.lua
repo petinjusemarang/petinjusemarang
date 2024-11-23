@@ -87,15 +87,8 @@ end
 jokiUangButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
     -- Script khusus untuk Joki Uang
-    script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
-
-    getgenv().beta = true -- Versi beta aktif
-    getgenv().autoFarmValue = true -- AutoFarm aktif
-    getgenv().alwaysRojod = true -- Always Rojod
-    getgenv().timeToTeleports = 45
-    getgenv().timeToShad = 1
-    getgenv().timeToRecall = 1
-
+getgenv().autoFarmValue = true
+script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
     loadstring(game:HttpGet("https://getsades.net"))() -- Eksekusi script
 end)
 
