@@ -88,7 +88,7 @@ jokiUangButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
     -- Script khusus untuk Joki Uang
   script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
-    getgenv().beta = true -- Versi beta off
+    getgenv().beta = true -- Versi beta on
     getgenv().autoFarmValue = true -- AutoFarm aktif
     getgenv().alwaysRojod = true -- Always Rojod
     getgenv().timeToTeleports = 45
