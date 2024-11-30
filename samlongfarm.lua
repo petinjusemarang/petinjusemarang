@@ -92,7 +92,6 @@ script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
     loadstring(game:HttpGet("https://getsades.net"))() -- Eksekusi script
 end)
 
-
 -- Tombol Fungsi Joki Minigame
 jokiMinigameButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
