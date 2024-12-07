@@ -92,6 +92,7 @@ jokiUangButton.MouseButton1Click:Connect(function()
     getgenv().beta = true -- Versi beta on
     getgenv().autoFarmValue = true -- AutoFarm aktif
     getgenv().alwaysRojod = true -- Always Rojod
+        getgenv().pingBased = true
     getgenv().timeToTeleports = 45
     getgenv().timeToShad = 1
     getgenv().timeToRecall = 1
