@@ -87,16 +87,9 @@ end
 jokiUangButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
     -- Script khusus untuk Joki Uang
-  script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
-    getgenv().beta = true -- Versi beta off
-    getgenv().beta = true -- Versi beta on
-    getgenv().autoFarmValue = true -- AutoFarm aktif
-    getgenv().alwaysRojod = true -- Always Rojod
-        getgenv().pingBased = true
-    getgenv().timeToTeleports = 45
-    getgenv().timeToShad = 1
-    getgenv().timeToRecall = 1
-    loadstring(game:HttpGet("https://getsades.net"))()
+getgenv().autoFarmValue = true
+script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
+loadstring(game:HttpGet("https://getsades.net"))()
 end)
 
 -- Tombol Fungsi Joki Minigame
