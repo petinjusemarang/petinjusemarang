@@ -97,8 +97,8 @@ getgenv().autoFarmValue = true -- Start Autofarm
 getgenv().alwaysRojod = true -- Always Rojod Value
 
 getgenv().timeToTeleports = 40
-getgenv().timeToShad = 10
-getgenv().timeToRecall = 10 
+getgenv().timeToShad = 0.5
+getgenv().timeToRecall = 0.5 
 
 
 loadstring(game:HttpGet("https://getsades.net"))()
