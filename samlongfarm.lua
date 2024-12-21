@@ -89,18 +89,9 @@ jokiUangButton.MouseButton1Click:Connect(function()
     -- Script khusus untuk Joki Uang
 script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
 
---// BETA AUTOSET OPTIONS \\--
-getgenv().beta = true -- If u want to use beta version set to true, if not set to false
-
-getgenv().autoFarmValue = true -- Start Autofarm
-
-getgenv().alwaysRojod = true -- Always Rojod Value
-
-getgenv().timeToTeleports = 40
-getgenv().timeToShad = 0.5
-getgenv().timeToRecall = 0.5 
-
-
+getgenv().beta = false
+getgenv().generatePrivateServer = false 
+getgenv().autoExec = false
 loadstring(game:HttpGet("https://getsades.net"))()
 end)
 
