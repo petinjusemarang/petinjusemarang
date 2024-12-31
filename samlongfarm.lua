@@ -89,7 +89,7 @@ jokiUangButton.MouseButton1Click:Connect(function()
     -- Script khusus untuk Joki Uang
 script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
 
-getgenv().beta        = true -- If u want to use beta version set to true, if not set to false (remove -- to apply)
+getgenv().beta        = false -- If u want to use beta version set to true, if not set to false (remove -- to apply)
 -- getgenv().eventScript = false -- If u want to use eventScript set to true, if not set to false (remove -- to apply)
 
 loadstring(game:HttpGet("https://getsades.net"))()
