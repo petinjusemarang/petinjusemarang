@@ -87,7 +87,7 @@ end
 jokiUangButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
     -- Script khusus untuk Joki Uang
-script_key="AQrlbjFnTfgpymdjoFWKdKjuBfUDzIuy";
+script_key="omikMUnZwgeToxnYFPagjlCsKJxXDABc";
 
 getgenv().beta        = false -- If u want to use beta version set to true, if not set to false (remove -- to apply)
 -- getgenv().eventScript = false -- If u want to use eventScript set to true, if not set to false (remove -- to apply)
