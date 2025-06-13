@@ -87,12 +87,7 @@ end
 jokiUangButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
     -- Script khusus untuk Joki Uang
-script_key="OXTQUcjoFqEMwDQcNNcHjlkZRBaOCJBq";
-
-getgenv().beta        = false -- If u want to use beta version set to true, if not set to false (remove -- to apply)
--- getgenv().eventScript = false -- If u want to use eventScript set to true, if not set to false (remove -- to apply)
-
-loadstring(game:HttpGet("https://getsades.net"))()
+loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/9e6b77fad2fd3c0e6023515dcff44135.lua"))()
 end)
 
 -- Tombol Fungsi Joki Minigame
