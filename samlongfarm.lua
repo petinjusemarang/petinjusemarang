@@ -88,6 +88,7 @@ jokiUangButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
     -- Script khusus untuk Joki Uang
 getgenv().storeId = "VEZA0853#296293768636661771#$bRTipXIT";
+getgenv().api_key = "ATMC_f87d1cdf2bfb732c9a08ca7148f7199fd46d8a6c62a7e9a9d26b8dc68213a6f3"
 loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/ef02dc52a6abf608dec6a0dea40654a0.lua"))()
 end)
 
