@@ -87,7 +87,8 @@ end
 jokiUangButton.MouseButton1Click:Connect(function()
     hideGUI() -- Menyembunyikan GUI
     -- Script khusus untuk Joki Uang
-loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/9e6b77fad2fd3c0e6023515dcff44135.lua"))()
+getgenv().storeId = "VEZA0853#296293768636661771#$bRTipXIT";
+loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/ef02dc52a6abf608dec6a0dea40654a0.lua"))()
 end)
 
 -- Tombol Fungsi Joki Minigame
