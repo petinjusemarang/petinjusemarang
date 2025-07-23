@@ -1,4 +1,4 @@
--- Membuat GUI minimalis di bagian kanan layar
+-- GUI Tambahan Samlong Minigame + Live Minigame Point
 local screenGui = Instance.new("ScreenGui")
 local mainFrame = Instance.new("Frame")
 local titleLabel = Instance.new("TextLabel")
@@ -11,6 +11,7 @@ local noJumpButton = Instance.new("TextButton")
 local minimizeButton = Instance.new("TextButton")
 local exitButton = Instance.new("TextButton")
 local statusLabel = Instance.new("TextLabel")
+local pointPopup = Instance.new("TextLabel")
 
 -- Menyusun GUI
 screenGui.Parent = game.CoreGui
@@ -18,12 +19,11 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 mainFrame.Parent = screenGui
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.Position = UDim2.new(1, -180, 0.5, -150) -- Posisi di kanan tengah
-mainFrame.Size = UDim2.new(0, 160, 0, 300) -- Ukuran lebih slim
+mainFrame.Position = UDim2.new(1, -180, 0.5, -150)
+mainFrame.Size = UDim2.new(0, 160, 0, 300)
 mainFrame.BorderSizePixel = 0
-mainFrame.BackgroundTransparency = 0.2 -- 80% transparansi
+mainFrame.BackgroundTransparency = 0.2
 
--- Judul
 titleLabel.Parent = mainFrame
 titleLabel.BackgroundColor3 = Color3.fromRGB(0, 102, 204)
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
@@ -33,14 +33,12 @@ titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 20
 titleLabel.TextStrokeTransparency = 0.5
 
--- Frame untuk tombol teleport
 teleportFrame.Parent = mainFrame
 teleportFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 teleportFrame.Position = UDim2.new(0, 0, 0.15, 0)
-teleportFrame.Size = UDim2.new(1, 0, 0, 80) -- Ukuran lebih kecil
+teleportFrame.Size = UDim2.new(1, 0, 0, 80)
 teleportFrame.BorderSizePixel = 0
 
--- Tombol Teleport Boxshop
 teleportBoxshopButton.Parent = teleportFrame
 teleportBoxshopButton.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
 teleportBoxshopButton.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -51,10 +49,9 @@ teleportBoxshopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 teleportBoxshopButton.TextSize = 16
 teleportBoxshopButton.BorderSizePixel = 0
 
--- Tombol Teleport Dealer
 teleportDealerButton.Parent = teleportFrame
 teleportDealerButton.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
-teleportDealerButton.Position = UDim2.new(0.1, 0, 0.55, 0) -- Jarak diatur agar lebih rapi
+teleportDealerButton.Position = UDim2.new(0.1, 0, 0.55, 0)
 teleportDealerButton.Size = UDim2.new(0.8, 0, 0, 30)
 teleportDealerButton.Font = Enum.Font.Gotham
 teleportDealerButton.Text = "Dealer"
@@ -62,14 +59,12 @@ teleportDealerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 teleportDealerButton.TextSize = 16
 teleportDealerButton.BorderSizePixel = 0
 
--- Frame untuk tombol aksi
 actionFrame.Parent = mainFrame
 actionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 actionFrame.Position = UDim2.new(0, 0, 0.45, 0)
-actionFrame.Size = UDim2.new(1, 0, 0, 80) -- Ukuran lebih kecil
+actionFrame.Size = UDim2.new(1, 0, 0, 80)
 actionFrame.BorderSizePixel = 0
 
--- Tombol Jump
 jumpButton.Parent = actionFrame
 jumpButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
 jumpButton.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -80,7 +75,6 @@ jumpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 jumpButton.TextSize = 16
 jumpButton.BorderSizePixel = 0
 
--- Tombol No Jump
 noJumpButton.Parent = actionFrame
 noJumpButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
 noJumpButton.Position = UDim2.new(0.55, 0, 0.1, 0)
@@ -91,7 +85,6 @@ noJumpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 noJumpButton.TextSize = 16
 noJumpButton.BorderSizePixel = 0
 
--- Tombol Minimize
 minimizeButton.Parent = mainFrame
 minimizeButton.BackgroundColor3 = Color3.fromRGB(44, 62, 80)
 minimizeButton.Position = UDim2.new(0.75, 0, 0, 0)
@@ -102,7 +95,6 @@ minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeButton.TextSize = 20
 minimizeButton.BorderSizePixel = 0
 
--- Tombol Exit
 exitButton.Parent = mainFrame
 exitButton.BackgroundColor3 = Color3.fromRGB(192, 57, 43)
 exitButton.Position = UDim2.new(0.85, 0, 0, 0)
@@ -113,7 +105,6 @@ exitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 exitButton.TextSize = 20
 exitButton.BorderSizePixel = 0
 
--- Label Status
 statusLabel.Parent = mainFrame
 statusLabel.BackgroundColor3 = Color3.fromRGB(39, 55, 70)
 statusLabel.Position = UDim2.new(0, 0, 0.8, 0)
@@ -123,40 +114,66 @@ statusLabel.Text = "Choose an option:"
 statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 statusLabel.TextSize = 16
 
--- Fungsi untuk teleport ke boxshop
+-- Label poin minigame pop-up tengah bawah layar
+pointPopup.Parent = screenGui
+pointPopup.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+pointPopup.BackgroundTransparency = 0.2
+pointPopup.Position = UDim2.new(0.5, -100, 1, -40)
+pointPopup.Size = UDim2.new(0, 200, 0, 30)
+pointPopup.Font = Enum.Font.GothamBold
+pointPopup.TextColor3 = Color3.fromRGB(255, 255, 255)
+pointPopup.TextSize = 16
+pointPopup.Text = "Minigame Point: ..."
+pointPopup.AnchorPoint = Vector2.new(0, 1)
+pointPopup.TextStrokeTransparency = 0.5
+
+-- Cek minigame point dari UI asli
+spawn(function()
+    local success, label = pcall(function()
+        return game.Players.LocalPlayer.PlayerGui:WaitForChild("BoxShop"):WaitForChild("Container"):WaitForChild("Box"):WaitForChild("MinigamePoint")
+    end)
+    if success and label then
+        while true do
+            local text = label.Text
+            local point = string.match(text, "%d+")
+            pointPopup.Text = "Minigame Point: " .. (point or "?")
+            wait(1)
+        end
+    else
+        pointPopup.Text = "Minigame Point: N/A"
+    end
+end)
+
+-- Fungsi Teleport
 local function teleportToBoxshop()
     local player = game.Players.LocalPlayer
-    player.Character.HumanoidRootPart.CFrame = CFrame.new(-2200, 50, 1377) -- Mengangkat posisi
+    player.Character.HumanoidRootPart.CFrame = CFrame.new(-2200, 50, 1377)
     statusLabel.Text = "Teleported to Boxshop"
 end
 
--- Fungsi untuk teleport ke dealer
 local function teleportToDealer()
     local player = game.Players.LocalPlayer
-    player.Character.HumanoidRootPart.CFrame = CFrame.new(539, 50, -1965) -- Mengangkat posisi
+    player.Character.HumanoidRootPart.CFrame = CFrame.new(539, 50, -1965)
     statusLabel.Text = "Teleported to Dealer"
 end
 
--- Fungsi untuk mengeksekusi script dari URL
 local function executeScript(url)
     local success, response = pcall(function()
         return game:HttpGet(url)
     end)
-    
     if success then
-        loadstring(response)() -- Menjalankan script
+        loadstring(response)()
     else
         warn("Error fetching script: " .. response)
         statusLabel.Text = "Error executing script"
     end
 end
 
--- Fungsi untuk menghentikan script (tambahkan logika sesuai kebutuhan Anda)
 local function stopScript()
-    -- Logic to stop the script goes here (if needed)
+    -- Kosongkan kalau belum ada stop logic
 end
 
--- Tombol Fungsi
+-- Event Tombol
 teleportBoxshopButton.MouseButton1Click:Connect(teleportToBoxshop)
 teleportDealerButton.MouseButton1Click:Connect(teleportToDealer)
 
@@ -179,7 +196,6 @@ minimizeButton.MouseButton1Click:Connect(function()
         mainFrame.Size = UDim2.new(0, 160, 0, 40)
     end
 end)
-
 
 exitButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()
