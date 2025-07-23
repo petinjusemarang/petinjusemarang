@@ -180,10 +180,6 @@ minimizeButton.MouseButton1Click:Connect(function()
     end
 end)
 
-exitButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
-
 
 exitButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()
