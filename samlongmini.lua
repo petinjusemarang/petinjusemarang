@@ -172,13 +172,18 @@ noJumpButton.MouseButton1Click:Connect(function()
     statusLabel.Text = "No Jump script executed"
 end)
 
+-- Toggle antara ukuran penuh dan minimal berdasarkan tinggi saat ini
 minimizeButton.MouseButton1Click:Connect(function()
     if mainFrame.Size.Y.Scale == 0 then
+    if mainFrame.Size.Y.Offset <= 40 then
+        -- Saat ini sudah minimal, kembalikan ke ukuran penuh
         mainFrame.Size = UDim2.new(0, 160, 0, 300)
     else
+        -- Ketika ukuran penuh, perkecil tampilan
         mainFrame.Size = UDim2.new(0, 160, 0, 40)
     end
 end)
+
 
 exitButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()
