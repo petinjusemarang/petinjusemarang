@@ -1,202 +1,169 @@
--- GUI Tambahan Samlong Minigame + Live Minigame Point
-local screenGui = Instance.new("ScreenGui")
-local mainFrame = Instance.new("Frame")
-local titleLabel = Instance.new("TextLabel")
-local teleportFrame = Instance.new("Frame")
-local teleportBoxshopButton = Instance.new("TextButton")
-local teleportDealerButton = Instance.new("TextButton")
-local actionFrame = Instance.new("Frame")
-local jumpButton = Instance.new("TextButton")
-local noJumpButton = Instance.new("TextButton")
-local minimizeButton = Instance.new("TextButton")
-local exitButton = Instance.new("TextButton")
-local statusLabel = Instance.new("TextLabel")
-local pointPopup = Instance.new("TextLabel")
+-- GUI FUTURISTIK SAMLONG - FIX SIZE & NOTIF POS
+local player = game.Players.LocalPlayer
+local rp = game:GetService("ReplicatedStorage")
+local coreGui = game:GetService("CoreGui")
 
--- Menyusun GUI
-screenGui.Parent = game.CoreGui
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+if coreGui:FindFirstChild("SamlongGUI") then
+    coreGui.SamlongGUI:Destroy()
+end
 
-mainFrame.Parent = screenGui
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.Position = UDim2.new(1, -180, 0.5, -150)
-mainFrame.Size = UDim2.new(0, 160, 0, 300)
-mainFrame.BorderSizePixel = 0
-mainFrame.BackgroundTransparency = 0.2
+local gui = Instance.new("ScreenGui", coreGui)
+gui.Name = "SamlongGUI"
+gui.ResetOnSpawn = false
 
-titleLabel.Parent = mainFrame
-titleLabel.BackgroundColor3 = Color3.fromRGB(0, 102, 204)
-titleLabel.Size = UDim2.new(1, 0, 0, 40)
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Text = "Teleport GUI"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = 20
-titleLabel.TextStrokeTransparency = 0.5
+local mainFrame = Instance.new("Frame", gui)
+mainFrame.Size = UDim2.new(1, 0, 1, 0)
+mainFrame.BackgroundTransparency = 1
 
-teleportFrame.Parent = mainFrame
-teleportFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-teleportFrame.Position = UDim2.new(0, 0, 0.15, 0)
-teleportFrame.Size = UDim2.new(1, 0, 0, 80)
-teleportFrame.BorderSizePixel = 0
+-- BUY AVANZA
+local buyBtn = Instance.new("TextButton", mainFrame)
+buyBtn.Size = UDim2.new(0, 180, 0, 40) -- dikecilin
+buyBtn.Position = UDim2.new(0.75, 0, 0, 30)
+buyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+buyBtn.Text = "BUY AVANZA"
+buyBtn.TextColor3 = Color3.new(1, 1, 1)
+buyBtn.Font = Enum.Font.GothamBold
+buyBtn.TextSize = 18
+buyBtn.BorderSizePixel = 0
+buyBtn.AutoButtonColor = true
 
-teleportBoxshopButton.Parent = teleportFrame
-teleportBoxshopButton.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
-teleportBoxshopButton.Position = UDim2.new(0.1, 0, 0.1, 0)
-teleportBoxshopButton.Size = UDim2.new(0.8, 0, 0, 30)
-teleportBoxshopButton.Font = Enum.Font.Gotham
-teleportBoxshopButton.Text = "Boxshop"
-teleportBoxshopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportBoxshopButton.TextSize = 16
-teleportBoxshopButton.BorderSizePixel = 0
+-- Notifikasi
+local notif = Instance.new("TextLabel", mainFrame)
+notif.Size = UDim2.new(1, 0, 0, 30)
+notif.Position = UDim2.new(0, 0, 0, 10) -- lebih naik
+notif.BackgroundTransparency = 1
+notif.Text = ""
+notif.TextColor3 = Color3.fromRGB(255, 70, 70)
+notif.TextSize = 18
+notif.Font = Enum.Font.GothamBold
+notif.TextStrokeTransparency = 0.5
+notif.TextStrokeColor3 = Color3.new(0, 0, 0)
+notif.TextWrapped = true
+notif.TextXAlignment = Enum.TextXAlignment.Center
 
-teleportDealerButton.Parent = teleportFrame
-teleportDealerButton.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
-teleportDealerButton.Position = UDim2.new(0.1, 0, 0.55, 0)
-teleportDealerButton.Size = UDim2.new(0.8, 0, 0, 30)
-teleportDealerButton.Font = Enum.Font.Gotham
-teleportDealerButton.Text = "Dealer"
-teleportDealerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportDealerButton.TextSize = 16
-teleportDealerButton.BorderSizePixel = 0
+-- Point Box
+local pointBG = Instance.new("Frame", mainFrame)
+pointBG.Size = UDim2.new(0, 420, 0, 160)
+pointBG.Position = UDim2.new(0.5, -210, 0.4, -80)
+pointBG.BackgroundColor3 = Color3.new(0, 0, 0)
+pointBG.BackgroundTransparency = 0.2
+pointBG.BorderSizePixel = 0
 
-actionFrame.Parent = mainFrame
-actionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-actionFrame.Position = UDim2.new(0, 0, 0.45, 0)
-actionFrame.Size = UDim2.new(1, 0, 0, 80)
-actionFrame.BorderSizePixel = 0
+local pointLabel = Instance.new("TextLabel", pointBG)
+pointLabel.Size = UDim2.new(1, 0, 1, 0)
+pointLabel.BackgroundTransparency = 1
+pointLabel.TextColor3 = Color3.new(1, 1, 1)
+pointLabel.Font = Enum.Font.GothamBlack
+pointLabel.TextScaled = true
+pointLabel.Text = "..."
+pointLabel.TextStrokeTransparency = 0.3
+pointLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
 
-jumpButton.Parent = actionFrame
-jumpButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-jumpButton.Position = UDim2.new(0.1, 0, 0.1, 0)
-jumpButton.Size = UDim2.new(0.35, 0, 0, 30)
-jumpButton.Font = Enum.Font.Gotham
-jumpButton.Text = "Jump"
-jumpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-jumpButton.TextSize = 16
-jumpButton.BorderSizePixel = 0
+-- Banner bawah
+local banner = Instance.new("Frame", mainFrame)
+banner.Size = UDim2.new(1, 0, 0, 70)
+banner.Position = UDim2.new(0, 0, 1, -70)
+banner.BackgroundColor3 = Color3.new(0, 0, 0)
+banner.BorderSizePixel = 0
 
-noJumpButton.Parent = actionFrame
-noJumpButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
-noJumpButton.Position = UDim2.new(0.55, 0, 0.1, 0)
-noJumpButton.Size = UDim2.new(0.35, 0, 0, 30)
-noJumpButton.Font = Enum.Font.Gotham
-noJumpButton.Text = "No Jump"
-noJumpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-noJumpButton.TextSize = 16
-noJumpButton.BorderSizePixel = 0
+-- JUMP
+local jump = Instance.new("TextButton", banner)
+jump.Size = UDim2.new(0.3, 0, 1, -10)
+jump.Position = UDim2.new(0.05, 0, 0, 5)
+jump.Text = "JUMP"
+jump.Font = Enum.Font.GothamBold
+jump.TextSize = 20
+jump.BackgroundColor3 = Color3.fromRGB(40, 180, 90)
+jump.TextColor3 = Color3.new(1, 1, 1)
+jump.BorderSizePixel = 0
+jump.TextStrokeTransparency = 0.3
+jump.TextStrokeColor3 = Color3.new(0, 0, 0)
 
-minimizeButton.Parent = mainFrame
-minimizeButton.BackgroundColor3 = Color3.fromRGB(44, 62, 80)
-minimizeButton.Position = UDim2.new(0.75, 0, 0, 0)
-minimizeButton.Size = UDim2.new(0, 30, 0, 30)
-minimizeButton.Font = Enum.Font.GothamBold
-minimizeButton.Text = "-"
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.TextSize = 20
-minimizeButton.BorderSizePixel = 0
+-- NOJUMP
+local nojump = Instance.new("TextButton", banner)
+nojump.Size = UDim2.new(0.3, 0, 1, -10)
+nojump.Position = UDim2.new(0.65, 0, 0, 5)
+nojump.Text = "NOJUMP"
+nojump.Font = Enum.Font.GothamBold
+nojump.TextSize = 20
+nojump.BackgroundColor3 = Color3.fromRGB(255, 90, 70)
+nojump.TextColor3 = Color3.new(1, 1, 1)
+nojump.BorderSizePixel = 0
+nojump.TextStrokeTransparency = 0.3
+nojump.TextStrokeColor3 = Color3.new(0, 0, 0)
 
-exitButton.Parent = mainFrame
-exitButton.BackgroundColor3 = Color3.fromRGB(192, 57, 43)
-exitButton.Position = UDim2.new(0.85, 0, 0, 0)
-exitButton.Size = UDim2.new(0, 30, 0, 30)
-exitButton.Font = Enum.Font.GothamBold
-exitButton.Text = "X"
-exitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-exitButton.TextSize = 20
-exitButton.BorderSizePixel = 0
+-- Label Tengah Banner
+local labelMid = Instance.new("TextLabel", banner)
+labelMid.Size = UDim2.new(0.3, 0, 1, 0)
+labelMid.Position = UDim2.new(0.35, 0, 0, 0)
+labelMid.BackgroundTransparency = 1
+labelMid.Text = "SAMLONG ANTI 02"
+labelMid.Font = Enum.Font.GothamBold
+labelMid.TextSize = 18
+labelMid.TextColor3 = Color3.new(1, 1, 1)
+labelMid.TextStrokeTransparency = 0.3
+labelMid.TextStrokeColor3 = Color3.new(0, 0, 0)
 
-statusLabel.Parent = mainFrame
-statusLabel.BackgroundColor3 = Color3.fromRGB(39, 55, 70)
-statusLabel.Position = UDim2.new(0, 0, 0.8, 0)
-statusLabel.Size = UDim2.new(1, 0, 0, 30)
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.Text = "Choose an option:"
-statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-statusLabel.TextSize = 16
+-- Update Poin
+local function updatePoint()
+    local tries = 0
+    while tries < 10 do
+        local gui = player:FindFirstChild("PlayerGui")
+        local label = gui and gui:FindFirstChild("BoxShop")
+            and gui.BoxShop:FindFirstChild("Container")
+            and gui.BoxShop.Container:FindFirstChild("Box")
+            and gui.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
 
--- Label poin minigame pop-up tengah bawah layar
-pointPopup.Parent = screenGui
-pointPopup.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-pointPopup.BackgroundTransparency = 0.2
-pointPopup.Position = UDim2.new(0.5, -100, 1, -40)
-pointPopup.Size = UDim2.new(0, 200, 0, 30)
-pointPopup.Font = Enum.Font.GothamBold
-pointPopup.TextColor3 = Color3.fromRGB(255, 255, 255)
-pointPopup.TextSize = 16
-pointPopup.Text = "Minigame Point: ..."
-pointPopup.AnchorPoint = Vector2.new(0, 1)
-pointPopup.TextStrokeTransparency = 0.5
-
--- Cek minigame point dari UI asli
-spawn(function()
-    local success, label = pcall(function()
-        return game.Players.LocalPlayer.PlayerGui:WaitForChild("BoxShop"):WaitForChild("Container"):WaitForChild("Box"):WaitForChild("MinigamePoint")
-    end)
-    if success and label then
-        while true do
-            local text = label.Text
-            local point = string.match(text, "%d+")
-            pointPopup.Text = "Minigame Point: " .. (point or "?")
-            wait(1)
+        if label and label:IsA("TextLabel") then
+            local function refresh()
+                local val = label.Text:match("%d+") or "0"
+                pointLabel.Text = val
+            end
+            refresh()
+            label:GetPropertyChangedSignal("Text"):Connect(refresh)
+            return
         end
-    else
-        pointPopup.Text = "Minigame Point: N/A"
+
+        tries += 1
+        task.wait(1)
     end
-end)
-
--- Fungsi Teleport
-local function teleportToBoxshop()
-    local player = game.Players.LocalPlayer
-    player.Character.HumanoidRootPart.CFrame = CFrame.new(-2200, 50, 1377)
-    statusLabel.Text = "Teleported to Boxshop"
+    pointLabel.Text = "0"
 end
 
-local function teleportToDealer()
-    local player = game.Players.LocalPlayer
-    player.Character.HumanoidRootPart.CFrame = CFrame.new(539, 50, -1965)
-    statusLabel.Text = "Teleported to Dealer"
-end
+-- Beli Avanza
+local function beliAvanza()
+    local cashText = player.PlayerGui:FindFirstChild("Main")
+        and player.PlayerGui.Main:FindFirstChild("Container")
+        and player.PlayerGui.Main.Container:FindFirstChild("Hub")
+        and player.PlayerGui.Main.Container.Hub:FindFirstChild("CashFrame")
+        and player.PlayerGui.Main.Container.Hub.CashFrame.Frame:FindFirstChild("TextLabel")
 
-local function executeScript(url)
-    local success, response = pcall(function()
-        return game:HttpGet(url)
-    end)
-    if success then
-        loadstring(response)()
+    if not cashText then return end
+
+    local uangStr = cashText.Text:gsub("RP", ""):gsub("%.", ""):gsub(",", ""):gsub(" ", "")
+    local uang = tonumber(uangStr)
+
+    if uang and uang >= 232850000 then
+        local args = {"Buy", "2021Avanza15CVT", "White", "Toyota"}
+        rp:WaitForChild("NetworkContainer")
+            :WaitForChild("RemoteFunctions")
+            :WaitForChild("Dealership")
+            :InvokeServer(unpack(args))
     else
-        warn("Error fetching script: " .. response)
-        statusLabel.Text = "Error executing script"
+        notif.Text = "😔 YAALLAH UANGE KURANG BOOS BOSS💸"
+        task.delay(3, function()
+            notif.Text = ""
+        end)
     end
 end
 
-local function stopScript()
-    -- Kosongkan kalau belum ada stop logic
-end
-
--- Event Tombol
-teleportBoxshopButton.MouseButton1Click:Connect(teleportToBoxshop)
-teleportDealerButton.MouseButton1Click:Connect(teleportToDealer)
-
-jumpButton.MouseButton1Click:Connect(function()
-    stopScript()
-    executeScript("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua")
-    statusLabel.Text = "Jump script executed"
+-- Tombol eksekusi
+buyBtn.MouseButton1Click:Connect(beliAvanza)
+jump.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"))()
+end)
+nojump.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"))()
 end)
 
-noJumpButton.MouseButton1Click:Connect(function()
-    stopScript()
-    executeScript("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua")
-    statusLabel.Text = "No Jump script executed"
-end)
-
-minimizeButton.MouseButton1Click:Connect(function()
-    if mainFrame.Size.Y.Scale == 0 then
-        mainFrame.Size = UDim2.new(0, 160, 0, 300)
-    else
-        mainFrame.Size = UDim2.new(0, 160, 0, 40)
-    end
-end)
-
-exitButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
+task.spawn(updatePoint)
