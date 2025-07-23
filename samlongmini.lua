@@ -1,10 +1,10 @@
--- GUI FUTURISTIK SAMLONG - FIX SIZE & NOTIF POS
+-- GUI FUTURISTIK SAMLONG - RESET WAKTU SAAT POINT BERUBAH
 local player = game.Players.LocalPlayer
 local rp = game:GetService("ReplicatedStorage")
 local coreGui = game:GetService("CoreGui")
 
 if coreGui:FindFirstChild("SamlongGUI") then
-    coreGui.SamlongGUI:Destroy()
+	coreGui.SamlongGUI:Destroy()
 end
 
 local gui = Instance.new("ScreenGui", coreGui)
@@ -17,7 +17,7 @@ mainFrame.BackgroundTransparency = 1
 
 -- BUY AVANZA
 local buyBtn = Instance.new("TextButton", mainFrame)
-buyBtn.Size = UDim2.new(0, 180, 0, 40) -- dikecilin
+buyBtn.Size = UDim2.new(0, 180, 0, 40)
 buyBtn.Position = UDim2.new(0.75, 0, 0, 30)
 buyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 buyBtn.Text = "BUY AVANZA"
@@ -30,7 +30,7 @@ buyBtn.AutoButtonColor = true
 -- Notifikasi
 local notif = Instance.new("TextLabel", mainFrame)
 notif.Size = UDim2.new(1, 0, 0, 30)
-notif.Position = UDim2.new(0, 0, 0, 10) -- lebih naik
+notif.Position = UDim2.new(0, 0, 0, 10)
 notif.BackgroundTransparency = 1
 notif.Text = ""
 notif.TextColor3 = Color3.fromRGB(255, 70, 70)
@@ -58,6 +58,18 @@ pointLabel.TextScaled = true
 pointLabel.Text = "..."
 pointLabel.TextStrokeTransparency = 0.3
 pointLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+
+-- Last Minigame Time
+local lastPlayedLabel = Instance.new("TextLabel", pointBG)
+lastPlayedLabel.Size = UDim2.new(1, 0, 0, 30)
+lastPlayedLabel.Position = UDim2.new(0, 0, 1, -35)
+lastPlayedLabel.BackgroundTransparency = 1
+lastPlayedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+lastPlayedLabel.Font = Enum.Font.Gotham
+lastPlayedLabel.TextSize = 16
+lastPlayedLabel.Text = "Last: N/A"
+lastPlayedLabel.TextStrokeTransparency = 0.5
+lastPlayedLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
 
 -- Banner bawah
 local banner = Instance.new("Frame", mainFrame)
@@ -104,66 +116,121 @@ labelMid.TextColor3 = Color3.new(1, 1, 1)
 labelMid.TextStrokeTransparency = 0.3
 labelMid.TextStrokeColor3 = Color3.new(0, 0, 0)
 
+-- POPUP ERROR
+local popup = Instance.new("TextLabel", mainFrame)
+popup.Size = UDim2.new(0.8, 0, 0.4, 0)
+popup.Position = UDim2.new(0.1, 0, 0.3, 0)
+popup.BackgroundColor3 = Color3.fromRGB(255, 30, 30)
+popup.Text = "🚨 DEVICE ERROR!\nPOINT TIDAK BERUBAH 🚨"
+popup.TextColor3 = Color3.new(1, 1, 1)
+popup.TextScaled = true
+popup.Font = Enum.Font.GothamBlack
+popup.Visible = false
+popup.TextStrokeTransparency = 0.2
+popup.TextStrokeColor3 = Color3.new(0, 0, 0)
+popup.ZIndex = 999
+popup.BorderSizePixel = 0
+
+-- Variabel waktu
+local lastPlayTime = os.time()
+local lastPoint = nil
+local pointUnchangedTime = 0
+
+local function updateLastPlayed()
+	local current = os.time()
+	local diff = os.difftime(current, lastPlayTime)
+	local minutes = math.floor(diff / 60)
+	local seconds = diff % 60
+	lastPlayedLabel.Text = string.format("Last: %dm %ds", minutes, seconds)
+end
+
 -- Update Poin
 local function updatePoint()
-    local tries = 0
-    while tries < 10 do
-        local gui = player:FindFirstChild("PlayerGui")
-        local label = gui and gui:FindFirstChild("BoxShop")
-            and gui.BoxShop:FindFirstChild("Container")
-            and gui.BoxShop.Container:FindFirstChild("Box")
-            and gui.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
+	local tries = 0
+	while tries < 10 do
+		local gui = player:FindFirstChild("PlayerGui")
+		local label = gui and gui:FindFirstChild("BoxShop")
+			and gui.BoxShop:FindFirstChild("Container")
+			and gui.BoxShop.Container:FindFirstChild("Box")
+			and gui.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
 
-        if label and label:IsA("TextLabel") then
-            local function refresh()
-                local val = label.Text:match("%d+") or "0"
-                pointLabel.Text = val
-            end
-            refresh()
-            label:GetPropertyChangedSignal("Text"):Connect(refresh)
-            return
-        end
-
-        tries += 1
-        task.wait(1)
-    end
-    pointLabel.Text = "0"
+		if label and label:IsA("TextLabel") then
+			local function refresh()
+				local val = label.Text:match("%d+") or "0"
+				if val ~= pointLabel.Text then
+					lastPlayTime = os.time() -- ✅ RESET HANYA KALAU POIN BERUBAH
+				end
+				pointLabel.Text = val
+			end
+			refresh()
+			label:GetPropertyChangedSignal("Text"):Connect(refresh)
+			return
+		end
+		tries += 1
+		task.wait(1)
+	end
+	pointLabel.Text = "0"
 end
 
 -- Beli Avanza
 local function beliAvanza()
-    local cashText = player.PlayerGui:FindFirstChild("Main")
-        and player.PlayerGui.Main:FindFirstChild("Container")
-        and player.PlayerGui.Main.Container:FindFirstChild("Hub")
-        and player.PlayerGui.Main.Container.Hub:FindFirstChild("CashFrame")
-        and player.PlayerGui.Main.Container.Hub.CashFrame.Frame:FindFirstChild("TextLabel")
+	local cashText = player.PlayerGui:FindFirstChild("Main")
+		and player.PlayerGui.Main:FindFirstChild("Container")
+		and player.PlayerGui.Main.Container:FindFirstChild("Hub")
+		and player.PlayerGui.Main.Container.Hub:FindFirstChild("CashFrame")
+		and player.PlayerGui.Main.Container.Hub.CashFrame.Frame:FindFirstChild("TextLabel")
 
-    if not cashText then return end
+	if not cashText then return end
 
-    local uangStr = cashText.Text:gsub("RP", ""):gsub("%.", ""):gsub(",", ""):gsub(" ", "")
-    local uang = tonumber(uangStr)
+	local uangStr = cashText.Text:gsub("RP", ""):gsub("%.", ""):gsub(",", ""):gsub(" ", "")
+	local uang = tonumber(uangStr)
 
-    if uang and uang >= 232850000 then
-        local args = {"Buy", "2021Avanza15CVT", "White", "Toyota"}
-        rp:WaitForChild("NetworkContainer")
-            :WaitForChild("RemoteFunctions")
-            :WaitForChild("Dealership")
-            :InvokeServer(unpack(args))
-    else
-        notif.Text = "😔 YAALLAH UANGE KURANG BOOS BOSS💸"
-        task.delay(3, function()
-            notif.Text = ""
-        end)
-    end
+	if uang and uang >= 232850000 then
+		local args = {"Buy", "2021Avanza15CVT", "White", "Toyota"}
+		rp:WaitForChild("NetworkContainer"):WaitForChild("RemoteFunctions"):WaitForChild("Dealership"):InvokeServer(unpack(args))
+	else
+		notif.Text = "😔 YAALLAH UANGE KURANG BOOS BOSS💸"
+		task.delay(3, function()
+			notif.Text = ""
+		end)
+	end
 end
 
 -- Tombol eksekusi
 buyBtn.MouseButton1Click:Connect(beliAvanza)
 jump.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"))()
 end)
 nojump.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"))()
 end)
 
+-- Loop update poin
 task.spawn(updatePoint)
+
+-- Loop update waktu main
+task.spawn(function()
+	while true do
+		updateLastPlayed()
+		task.wait(1)
+	end
+end)
+
+-- Deteksi poin stuck
+task.spawn(function()
+	while true do
+		if tonumber(pointLabel.Text) then
+			if lastPoint == pointLabel.Text then
+				pointUnchangedTime += 1
+			else
+				pointUnchangedTime = 0
+				lastPoint = pointLabel.Text
+			end
+
+			if pointUnchangedTime == 600 then -- 10 menit
+				popup.Visible = true
+			end
+		end
+		task.wait(1)
+	end
+end)
