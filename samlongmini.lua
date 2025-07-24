@@ -227,7 +227,7 @@ task.spawn(function()
 				lastPoint = pointLabel.Text
 			end
 
-			if pointUnchangedTime == 600 then -- 10 menit
+			if pointUnchangedTime == 900 then -- 10 menit
 				popup.Visible = true
 			end
 		end
