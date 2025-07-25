@@ -152,7 +152,7 @@ okBtn.Visible            = false
 local lastPlayTime    = os.time()
 local lastValChange   = os.time()
 local alerted         = false
-local STUCK_THRESHOLD = 4  -- 600 detik = 10 menit
+local STUCK_THRESHOLD = 600  -- 600 detik = 10 menit
 
 -- Fungsi updateLastPlayed
 local function updateLastPlayed()
