@@ -1,34 +1,34 @@
 -- GUI Samlong CDID with Rounded Corners, Clean Layout & Draggable
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local Players           = game:GetService("Players")
+local UserInputService  = game:GetService("UserInputService")
+local player            = Players.LocalPlayer
 
 -- Root ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SamlongGui"
-screenGui.Parent = player:WaitForChild("PlayerGui")
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Name               = "SamlongGui"
+screenGui.ZIndexBehavior     = Enum.ZIndexBehavior.Sibling
+screenGui.Parent             = player:WaitForChild("PlayerGui")
+
+local rootGui = screenGui  -- referensi ke GUI utama untuk hide/show
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 320, 0, 300)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -150)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+mainFrame.Name            = "MainFrame"
+mainFrame.Size            = UDim2.new(0, 320, 0, 300)
+mainFrame.Position        = UDim2.new(0.5, -160, 0.5, -150)
+mainFrame.BackgroundColor3= Color3.fromRGB(25, 25, 30)
 mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
+mainFrame.Parent          = screenGui
 
 -- Rounded Corners & Border Stroke
 local uiCornerMain = Instance.new("UICorner", mainFrame)
 uiCornerMain.CornerRadius = UDim.new(0, 12)
 local uiStrokeMain = Instance.new("UIStroke", mainFrame)
-uiStrokeMain.Thickness = 2
-uiStrokeMain.Color = Color3.fromRGB(50, 50, 60)
+uiStrokeMain.Thickness   = 2
+uiStrokeMain.Color       = Color3.fromRGB(50, 50, 60)
 
 -- Drag Functionality
-local UserInputService = game:GetService("UserInputService")
-local dragging = false
-local dragStart
-local startPos
+local dragging, dragStart, startPos = false, nil, nil
 local function updateDrag(input)
     local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(
@@ -40,9 +40,7 @@ local function updateDrag(input)
 end
 mainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
+        dragging, dragStart, startPos = true, input.Position, mainFrame.Position
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -51,70 +49,76 @@ mainFrame.InputBegan:Connect(function(input)
     end
 end)
 mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         updateDrag(input)
     end
 end)
 UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         updateDrag(input)
     end
 end)
 
 -- Title Bar & Close Button
 local titleBar = Instance.new("Frame", mainFrame)
-titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+titleBar.Name            = "TitleBar"
+titleBar.Size            = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3= Color3.fromRGB(18, 18, 22)
 titleBar.BorderSizePixel = 0
 local uiCornerTitle = Instance.new("UICorner", titleBar)
 uiCornerTitle.CornerRadius = UDim.new(0, 12)
 
 local titleLabel = Instance.new("TextLabel", titleBar)
-titleLabel.Size = UDim2.new(1, -40, 1, 0)
-titleLabel.Position = UDim2.new(0, 12, 0, 0)
+titleLabel.Size               = UDim2.new(1, -40, 1, 0)
+titleLabel.Position           = UDim2.new(0, 12, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Text = "SAMLONG CDID"
-titleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
-titleLabel.TextSize = 20
+titleLabel.Font               = Enum.Font.GothamBold
+titleLabel.Text               = "SAMLONG CDID"
+titleLabel.TextColor3         = Color3.fromRGB(240, 240, 245)
+titleLabel.TextSize           = 20
 
 local closeButton = Instance.new("TextButton", titleBar)
-closeButton.Name = "CloseBtn"
-closeButton.Size = UDim2.new(0, 30, 0, 30)
-closeButton.Position = UDim2.new(1, -38, 0, 5)
+closeButton.Name               = "CloseBtn"
+closeButton.Size               = UDim2.new(0, 30, 0, 30)
+closeButton.Position           = UDim2.new(1, -38, 0, 5)
 closeButton.BackgroundTransparency = 1
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Text = "✕"
-closeButton.TextColor3 = Color3.fromRGB(200, 200, 205)
-closeButton.TextSize = 18
-closeButton.MouseEnter:Connect(function() closeButton.TextColor3 = Color3.fromRGB(255, 100, 100) end)
-closeButton.MouseLeave:Connect(function() closeButton.TextColor3 = Color3.fromRGB(200, 200, 205) end)
-closeButton.MouseButton1Click:Connect(function() screenGui:Destroy() end)
+closeButton.Font               = Enum.Font.GothamBold
+closeButton.Text               = "✕"
+closeButton.TextColor3         = Color3.fromRGB(200, 200, 205)
+closeButton.TextSize           = 18
+closeButton.MouseEnter:Connect(function()
+    closeButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+end)
+closeButton.MouseLeave:Connect(function()
+    closeButton.TextColor3 = Color3.fromRGB(200, 200, 205)
+end)
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
 
 -- Content Frame with List Layout
 local contentFrame = Instance.new("Frame", mainFrame)
-contentFrame.Name = "Content"
+contentFrame.Name             = "Content"
 contentFrame.BackgroundTransparency = 1
-contentFrame.Position = UDim2.new(0, 0, 0, 50)
-contentFrame.Size = UDim2.new(1, 0, 1, -80)
+contentFrame.Position         = UDim2.new(0, 0, 0, 50)
+contentFrame.Size             = UDim2.new(1, 0, 1, -80)
 
 local listLayout = Instance.new("UIListLayout", contentFrame)
-listLayout.Padding = UDim.new(0, 0, 0, 12)
-listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding            = UDim.new(0, 12)
+listLayout.HorizontalAlignment= Enum.HorizontalAlignment.Center
+listLayout.SortOrder          = Enum.SortOrder.LayoutOrder
 
 -- Utility to create buttons
 local function createButton(text, callback)
     local btn = Instance.new("TextButton", contentFrame)
-    btn.Name = text:gsub("%s+", "")
+    btn.Name            = text:gsub("%s+", "")
     btn.AutoButtonColor = true
-    btn.Size = UDim2.new(0, 260, 0, 40)
-    btn.BackgroundColor3 = Color3.fromRGB(45, 135, 240)
-    btn.Text = text
-    btn.Font = Enum.Font.Gotham
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 16
+    btn.Size            = UDim2.new(0, 260, 0, 40)
+    btn.BackgroundColor3= Color3.fromRGB(45, 135, 240)
+    btn.Text            = text
+    btn.Font            = Enum.Font.Gotham
+    btn.TextColor3      = Color3.fromRGB(255, 255, 255)
+    btn.TextSize        = 16
     btn.BorderSizePixel = 0
     local corner = Instance.new("UICorner", btn)
     corner.CornerRadius = UDim.new(0, 8)
@@ -122,180 +126,183 @@ local function createButton(text, callback)
     return btn
 end
 
--- Buttons and their actions
+-- ==== Joki Uang ====
 createButton("Joki Uang", function()
--- Tunggu game benar-benar loaded
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
+    -- sembunyikan GUI pilihan
+    rootGui.Enabled = false
 
--- Services & Player
-local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
-local player  = Players.LocalPlayer or Players.PlayerAdded:Wait()
+    -- tunggu game loaded
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+    end
 
--- Hapus GUI lama
-if CoreGui:FindFirstChild("SamlongJokiUI") then
-    CoreGui.SamlongJokiUI:Destroy()
-end
+    -- Services & Player
+    local Players  = game:GetService("Players")
+    local CoreGui  = game:GetService("CoreGui")
+    local player   = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
--- Buat ScreenGui baru di CoreGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name           = "SamlongJokiUI"
-screenGui.ResetOnSpawn   = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-screenGui.Parent         = CoreGui
+    -- hapus GUI joki lama
+    if CoreGui:FindFirstChild("SamlongJokiUI") then
+        CoreGui.SamlongJokiUI:Destroy()
+    end
 
--- Fungsi pembantu: bikin tombol
-local function makeButton(size, pos, color, text)
-    local btn = Instance.new("TextButton")
-    btn.Size            = size
-    btn.Position        = pos
-    btn.AnchorPoint     = Vector2.new(0.5,0.5)
-    btn.BackgroundColor3= color
-    btn.Text            = text
-    btn.TextColor3      = Color3.new(1,1,1)
-    btn.Font            = Enum.Font.GothamBold
-    btn.TextScaled      = true
-    btn.ZIndex          = 100
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
-    btn.Parent          = screenGui
-    return btn
-end
+    -- buat GUI joki baru
+    local jokiGui = Instance.new("ScreenGui")
+    jokiGui.Name               = "SamlongJokiUI"
+    jokiGui.ResetOnSpawn       = false
+    jokiGui.ZIndexBehavior     = Enum.ZIndexBehavior.Global
+    jokiGui.Parent             = CoreGui
 
--- 1) Tombol “Mulai”
-local startBtn = makeButton(
-    UDim2.new(0,200,0,60),
-    UDim2.new(0.5,0,0.5,0),
-    Color3.fromRGB(0,170,255),
-    "Mulai"
-)
+    -- helper: buat tombol di jokiGui
+    local function makeButton(size, pos, color, text)
+        local btn = Instance.new("TextButton")
+        btn.Size            = size
+        btn.Position        = pos
+        btn.AnchorPoint     = Vector2.new(0.5,0.5)
+        btn.BackgroundColor3= color
+        btn.Text            = text
+        btn.TextColor3      = Color3.new(1,1,1)
+        btn.Font            = Enum.Font.GothamBold
+        btn.TextScaled      = true
+        btn.ZIndex          = 100
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
+        btn.Parent          = jokiGui
+        return btn
+    end
 
--- 2) Tombol “Munculkan UI Samlong” (hidden dulu)
-local showUIBtn = makeButton(
-    UDim2.new(0,300,0,50),
-    UDim2.new(0.5,0,0.65,0),
-    Color3.fromRGB(255,170,0),
-    "Munculkan UI Samlong"
-)
-showUIBtn.Visible = false
+    -- tombol “Mulai”
+    local startBtn = makeButton(
+        UDim2.new(0,200,0,60),
+        UDim2.new(0.5,0,0.5,0),
+        Color3.fromRGB(0,170,255),
+        "Mulai"
+    )
 
--- Fungsi: bangun UI uang + timer + pop‑up
-local function createMoneyUI()
-    -- Ambil label uang setelah loader jalan
-    local playerGui = player:WaitForChild("PlayerGui")
-    local moneyLabel = playerGui
-        :WaitForChild("Main")
-        :WaitForChild("Container")
-        :WaitForChild("Hub")
-        :WaitForChild("CashFrame")
-        :WaitForChild("Frame")
-        :WaitForChild("TextLabel")
-
-    -- Shadow
-    local shadow = Instance.new("Frame", screenGui)
-    shadow.Size               = UDim2.new(1,0,1,0)
-    shadow.BackgroundColor3   = Color3.new(0,0,0)
-    shadow.BackgroundTransparency = 0.4
-
-    -- Main frame
-    local mainF = Instance.new("Frame", screenGui)
-    mainF.Size            = UDim2.new(0,520,0,240)
-    mainF.Position        = UDim2.new(0.5,0,0.5,0)
-    mainF.AnchorPoint     = Vector2.new(0.5,0.5)
-    mainF.BackgroundColor3= Color3.fromRGB(30,30,30)
-    Instance.new("UICorner", mainF).CornerRadius = UDim.new(0,16)
-
-    -- Text: uangmu
-    local uangText = Instance.new("TextLabel", mainF)
-    uangText.Size           = UDim2.new(1,-40,0.6,0)
-    uangText.Position       = UDim2.new(0,20,0,30)
-    uangText.BackgroundTransparency = 1
-    uangText.Font           = Enum.Font.GothamBlack
-    uangText.TextScaled     = true
-    uangText.TextColor3     = Color3.new(1,1,1)
-    uangText.Text           = "Uangmu saat ini: "..moneyLabel.Text
-
-    -- Text: earn terakhir
-    local earnText = Instance.new("TextLabel", mainF)
-    earnText.Size           = UDim2.new(1,-40,0.3,0)
-    earnText.Position       = UDim2.new(0,20,0.65,0)
-    earnText.BackgroundTransparency = 1
-    earnText.Font           = Enum.Font.GothamSemibold
-    earnText.TextScaled     = true
-    earnText.TextColor3     = Color3.fromRGB(200,200,200)
-    earnText.Text           = "Earn terakhir: -"
-
-    -- Pop‑up NGANGGUR
-    local ng = Instance.new("TextLabel", screenGui)
-    ng.Size            = UDim2.new(0,600,0,100)
-    ng.Position        = UDim2.new(0.5,0,0.85,0)
-    ng.AnchorPoint     = Vector2.new(0.5,0.5)
-    ng.BackgroundColor3 = Color3.fromRGB(255,0,0)
-    ng.Font            = Enum.Font.GothamBlack
-    ng.TextScaled      = true
-    ng.TextColor3      = Color3.new(1,1,1)
-    ng.Text            = "SUPIR NGANGGUR BOS!!!"
-    ng.Visible         = false
-    Instance.new("UICorner", ng).CornerRadius = UDim.new(0,12)
-
-    -- Timer loop & reset on earn
-    local lastEarn = os.time()
-    moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
-        lastEarn = os.time()
-        uangText.Text = "Uangmu saat ini: "..moneyLabel.Text
-    end)
-    task.spawn(function()
-        while true do
-            task.wait(1)
-            local elapsed = os.time() - lastEarn
-            earnText.Text = string.format(
-                "Earn terakhir: %02d menit %02d detik yang lalu",
-                math.floor(elapsed/60), elapsed%60
-            )
-            ng.Visible = (elapsed >= 600)
-        end
-    end)
-end
-
--- Event: klik “Mulai”
-startBtn.MouseButton1Click:Connect(function()
-    startBtn.Visible  = false
-    showUIBtn.Visible = true  -- tampilkan tombol ini **sebelum** loader
-
-    -- jalankan loader joki uang
-    getgenv().sdki_scriptKey="phplKytbwSpUNwhVruyoOFmOuFHunJcT"
-    loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
-end)
-
--- Event: klik “Munculkan UI Samlong”
-showUIBtn.MouseButton1Click:Connect(function()
+    -- tombol “Munculkan UI Samlong”
+    local showUIBtn = makeButton(
+        UDim2.new(0,300,0,50),
+        UDim2.new(0.5,0,0.65,0),
+        Color3.fromRGB(255,170,0),
+        "Munculkan UI Samlong"
+    )
     showUIBtn.Visible = false
-    createMoneyUI()
+
+    -- fungsi buat money UI + timer + pop‑up
+    local function createMoneyUI()
+        -- ambil label uang asli
+        local playerGui  = player:WaitForChild("PlayerGui")
+        local moneyLabel = playerGui
+            :WaitForChild("Main")
+            :WaitForChild("Container")
+            :WaitForChild("Hub")
+            :WaitForChild("CashFrame")
+            :WaitForChild("Frame")
+            :WaitForChild("TextLabel")
+
+        -- shadow
+        local shadow = Instance.new("Frame", jokiGui)
+        shadow.Size               = UDim2.new(1,0,1,0)
+        shadow.BackgroundColor3   = Color3.new(0,0,0)
+        shadow.BackgroundTransparency = 0.4
+
+        -- main frame uang
+        local mainF = Instance.new("Frame", jokiGui)
+        mainF.Size            = UDim2.new(0,520,0,240)
+        mainF.Position        = UDim2.new(0.5,0,0.5,0)
+        mainF.AnchorPoint     = Vector2.new(0.5,0.5)
+        mainF.BackgroundColor3= Color3.fromRGB(30,30,30)
+        Instance.new("UICorner", mainF).CornerRadius = UDim.new(0,16)
+
+        -- teks uang
+        local uangText = Instance.new("TextLabel", mainF)
+        uangText.Size           = UDim2.new(1,-40,0.6,0)
+        uangText.Position       = UDim2.new(0,20,0,30)
+        uangText.BackgroundTransparency = 1
+        uangText.Font           = Enum.Font.GothamBlack
+        uangText.TextScaled     = true
+        uangText.TextColor3     = Color3.new(1,1,1)
+        uangText.Text           = "Uangmu saat ini: "..moneyLabel.Text
+
+        -- teks earn terakhir
+        local earnText = Instance.new("TextLabel", mainF)
+        earnText.Size           = UDim2.new(1,-40,0.3,0)
+        earnText.Position       = UDim2.new(0,20,0.65,0)
+        earnText.BackgroundTransparency = 1
+        earnText.Font           = Enum.Font.GothamSemibold
+        earnText.TextScaled     = true
+        earnText.TextColor3     = Color3.fromRGB(200,200,200)
+        earnText.Text           = "Earn terakhir: -"
+
+        -- pop‑up “SUPIR NGANGGUR BOS!!!”
+        local ng = Instance.new("TextLabel", jokiGui)
+        ng.Size            = UDim2.new(0,600,0,100)
+        ng.Position        = UDim2.new(0.5,0,0.85,0)
+        ng.AnchorPoint     = Vector2.new(0.5,0.5)
+        ng.BackgroundColor3 = Color3.fromRGB(255,0,0)
+        ng.Font            = Enum.Font.GothamBlack
+        ng.TextScaled      = true
+        ng.TextColor3      = Color3.new(1,1,1)
+        ng.Text            = "SUPIR NGANGGUR BOS!!!"
+        ng.Visible         = false
+        Instance.new("UICorner", ng).CornerRadius = UDim.new(0,12)
+
+        -- loop timer & reset on earn
+        local lastEarn = os.time()
+        moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
+            lastEarn = os.time()
+            uangText.Text = "Uangmu saat ini: "..moneyLabel.Text
+        end)
+        task.spawn(function()
+            while true do
+                task.wait(1)
+                local elapsed = os.time() - lastEarn
+                earnText.Text = string.format(
+                    "Earn terakhir: %02d menit %02d detik yang lalu",
+                    math.floor(elapsed/60), elapsed%60
+                )
+                ng.Visible = (elapsed >= 600)
+            end
+        end)
+    end
+
+    -- event klik “Mulai”
+    startBtn.MouseButton1Click:Connect(function()
+        startBtn.Visible  = false
+        showUIBtn.Visible = true
+        -- jalankan loader joki uang
+        getgenv().sdki_scriptKey = "phplKytbwSpUNwhVruyoOFmOuFHunJcT"
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
+    end)
+
+    -- event klik “Munculkan UI Samlong”
+    showUIBtn.MouseButton1Click:Connect(function()
+        showUIBtn.Visible = false
+        createMoneyUI()
+    end)
 end)
 
-end)
-
+-- ==== Joki Minigame ====
 createButton("Joki Minigame", function()
-    screenGui.Enabled = false
+    rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmini.lua"))()
 end)
 
+-- ==== Joki Mancing ====
 createButton("Joki Mancing", function()
-    screenGui.Enabled = false
+    rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmancing.lua"))()
 end)
 
 -- Status Label
 local statusLabel = Instance.new("TextLabel", mainFrame)
-statusLabel.Name = "Status"
-statusLabel.Size = UDim2.new(1, 0, 0, 30)
-statusLabel.Position = UDim2.new(0, 0, 1, -30)
-statusLabel.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+statusLabel.Name            = "Status"
+statusLabel.Size            = UDim2.new(1, 0, 0, 30)
+statusLabel.Position        = UDim2.new(0, 0, 1, -30)
+statusLabel.BackgroundColor3= Color3.fromRGB(18, 18, 22)
 statusLabel.BorderSizePixel = 0
 local statusCorner = Instance.new("UICorner", statusLabel)
-statusCorner.CornerRadius = UDim.new(0, 12)
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.Text = "Ready"
-statusLabel.TextColor3 = Color3.fromRGB(200, 200, 205)
-statusLabel.TextSize = 14
+statusCorner.CornerRadius   = UDim.new(0, 12)
+statusLabel.Font            = Enum.Font.Gotham
+statusLabel.Text            = "Ready"
+statusLabel.TextColor3      = Color3.fromRGB(200, 200, 205)
+statusLabel.TextSize        = 14
