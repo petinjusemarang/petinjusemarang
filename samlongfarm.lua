@@ -158,38 +158,40 @@ createButton("Joki Uang", function()
         local btn = Instance.new("TextButton")
         btn.Size            = size
         btn.Position        = pos
-        btn.AnchorPoint     = Vector2.new(0.5,0.5)
+        btn.AnchorPoint     = Vector2.new(0.5, 0.5)
         btn.BackgroundColor3= color
         btn.Text            = text
-        btn.TextColor3      = Color3.new(1,1,1)
+        btn.TextColor3      = Color3.new(1, 1, 1)
         btn.Font            = Enum.Font.GothamBold
         btn.TextScaled      = true
         btn.ZIndex          = 100
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
         btn.Parent          = jokiGui
         return btn
     end
 
     -- tombol “Mulai”
     local startBtn = makeButton(
-        UDim2.new(0,200,0,60),
-        UDim2.new(0.5,0,0.5,0),
-        Color3.fromRGB(0,170,255),
+        UDim2.new(0, 200, 0, 60),
+        UDim2.new(0.5, 0, 0.5, 0),
+        Color3.fromRGB(0, 170, 255),
         "Mulai"
     )
 
     -- tombol “Munculkan UI Samlong”
     local showUIBtn = makeButton(
-        UDim2.new(0,300,0,50),
-        UDim2.new(0.5,0,0.65,0),
-        Color3.fromRGB(255,170,0),
+        UDim2.new(0, 300, 0, 50),
+        UDim2.new(0.5, 0, 0.65, 0),
+        Color3.fromRGB(255, 170, 0),
         "Munculkan UI Samlong"
     )
     showUIBtn.Visible = false
+    -- pindahkan ke pojok kanan bawah device LDCloud KVIP
+    showUIBtn.AnchorPoint = Vector2.new(1, 1)
+    showUIBtn.Position    = UDim2.new(1, -20, 1, -20)
 
-    -- fungsi buat money UI + timer + pop‑up
+    -- fungsi buat money UI + timer + pop-up
     local function createMoneyUI()
-        -- ambil label uang asli
         local playerGui  = player:WaitForChild("PlayerGui")
         local moneyLabel = playerGui
             :WaitForChild("Main")
@@ -199,54 +201,48 @@ createButton("Joki Uang", function()
             :WaitForChild("Frame")
             :WaitForChild("TextLabel")
 
-        -- shadow
         local shadow = Instance.new("Frame", jokiGui)
-        shadow.Size               = UDim2.new(1,0,1,0)
-        shadow.BackgroundColor3   = Color3.new(0,0,0)
+        shadow.Size               = UDim2.new(1, 0, 1, 0)
+        shadow.BackgroundColor3   = Color3.new(0, 0, 0)
         shadow.BackgroundTransparency = 0.4
 
-        -- main frame uang
         local mainF = Instance.new("Frame", jokiGui)
-        mainF.Size            = UDim2.new(0,520,0,240)
-        mainF.Position        = UDim2.new(0.5,0,0.5,0)
-        mainF.AnchorPoint     = Vector2.new(0.5,0.5)
-        mainF.BackgroundColor3= Color3.fromRGB(30,30,30)
-        Instance.new("UICorner", mainF).CornerRadius = UDim.new(0,16)
+        mainF.Size            = UDim2.new(0, 520, 0, 240)
+        mainF.Position        = UDim2.new(0.5, 0, 0.5, 0)
+        mainF.AnchorPoint     = Vector2.new(0.5, 0.5)
+        mainF.BackgroundColor3= Color3.fromRGB(30, 30, 30)
+        Instance.new("UICorner", mainF).CornerRadius = UDim.new(0, 16)
 
-        -- teks uang
         local uangText = Instance.new("TextLabel", mainF)
-        uangText.Size           = UDim2.new(1,-40,0.6,0)
-        uangText.Position       = UDim2.new(0,20,0,30)
+        uangText.Size           = UDim2.new(1, -40, 0.6, 0)
+        uangText.Position       = UDim2.new(0, 20, 0, 30)
         uangText.BackgroundTransparency = 1
         uangText.Font           = Enum.Font.GothamBlack
         uangText.TextScaled     = true
-        uangText.TextColor3     = Color3.new(1,1,1)
+        uangText.TextColor3     = Color3.new(1, 1, 1)
         uangText.Text           = "Uangmu saat ini: "..moneyLabel.Text
 
-        -- teks earn terakhir
         local earnText = Instance.new("TextLabel", mainF)
-        earnText.Size           = UDim2.new(1,-40,0.3,0)
-        earnText.Position       = UDim2.new(0,20,0.65,0)
+        earnText.Size           = UDim2.new(1, -40, 0.3, 0)
+        earnText.Position       = UDim2.new(0, 20, 0.65, 0)
         earnText.BackgroundTransparency = 1
         earnText.Font           = Enum.Font.GothamSemibold
         earnText.TextScaled     = true
-        earnText.TextColor3     = Color3.fromRGB(200,200,200)
+        earnText.TextColor3     = Color3.fromRGB(200, 200, 200)
         earnText.Text           = "Earn terakhir: -"
 
-        -- pop‑up “SUPIR NGANGGUR BOS!!!”
         local ng = Instance.new("TextLabel", jokiGui)
-        ng.Size            = UDim2.new(0,600,0,100)
-        ng.Position        = UDim2.new(0.5,0,0.85,0)
-        ng.AnchorPoint     = Vector2.new(0.5,0.5)
-        ng.BackgroundColor3 = Color3.fromRGB(255,0,0)
+        ng.Size            = UDim2.new(0, 600, 0, 100)
+        ng.Position        = UDim2.new(0.5, 0, 0.85, 0)
+        ng.AnchorPoint     = Vector2.new(0.5, 0.5)
+        ng.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         ng.Font            = Enum.Font.GothamBlack
         ng.TextScaled      = true
-        ng.TextColor3      = Color3.new(1,1,1)
+        ng.TextColor3      = Color3.new(1, 1, 1)
         ng.Text            = "SUPIR NGANGGUR BOS!!!"
         ng.Visible         = false
-        Instance.new("UICorner", ng).CornerRadius = UDim.new(0,12)
+        Instance.new("UICorner", ng).CornerRadius = UDim.new(0, 12)
 
-        -- loop timer & reset on earn
         local lastEarn = os.time()
         moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
             lastEarn = os.time()
@@ -258,23 +254,22 @@ createButton("Joki Uang", function()
                 local elapsed = os.time() - lastEarn
                 earnText.Text = string.format(
                     "Earn terakhir: %02d menit %02d detik yang lalu",
-                    math.floor(elapsed/60), elapsed%60
+                    math.floor(elapsed/60), elapsed % 60
                 )
                 ng.Visible = (elapsed >= 600)
             end
         end)
     end
 
-    -- event klik “Mulai”
+    -- event klik "Mulai"
     startBtn.MouseButton1Click:Connect(function()
         startBtn.Visible  = false
         showUIBtn.Visible = true
-        -- jalankan loader joki uang
         getgenv().sdki_scriptKey = "phplKytbwSpUNwhVruyoOFmOuFHunJcT"
         loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
     end)
 
-    -- event klik “Munculkan UI Samlong”
+    -- event klik "Munculkan UI Samlong"
     showUIBtn.MouseButton1Click:Connect(function()
         showUIBtn.Visible = false
         createMoneyUI()
