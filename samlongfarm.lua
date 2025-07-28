@@ -274,7 +274,8 @@ createButton("Joki Uang", function()
     startBtn.MouseButton1Click:Connect(function()
         startBtn.Visible  = false
         showUIBtn.Visible = true
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/6322cec0a48a21e3bf648634d2c120a0.lua"))()
+        getgenv().sdki_scriptKey = "phplKytbwSpUNwhVruyoOFmOuFHunJcT"
+       loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
     end)
 
     -- event klik "Munculkan UI Samlong"
