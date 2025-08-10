@@ -128,32 +128,22 @@ end
 
 -- ==== Joki Uang ====
 createButton("Joki Uang", function()
-    -- sembunyikan GUI pilihan
     rootGui.Enabled = false
-
-    -- tunggu game loaded
     if not game:IsLoaded() then
         game.Loaded:Wait()
     end
-
-    -- Services & Player
     local Players  = game:GetService("Players")
     local CoreGui  = game:GetService("CoreGui")
     local player   = Players.LocalPlayer or Players.PlayerAdded:Wait()
-
-    -- hapus GUI joki lama
     if CoreGui:FindFirstChild("SamlongJokiUI") then
         CoreGui.SamlongJokiUI:Destroy()
     end
-
-    -- buat GUI joki baru
     local jokiGui = Instance.new("ScreenGui")
     jokiGui.Name               = "SamlongJokiUI"
     jokiGui.ResetOnSpawn       = false
     jokiGui.ZIndexBehavior     = Enum.ZIndexBehavior.Global
     jokiGui.Parent             = CoreGui
 
-    -- helper: buat tombol di jokiGui
     local function makeButton(size, pos, color, text)
         local btn = Instance.new("TextButton")
         btn.Size            = size
@@ -170,7 +160,6 @@ createButton("Joki Uang", function()
         return btn
     end
 
-    -- tombol “Mulai”
     local startBtn = makeButton(
         UDim2.new(0, 200, 0, 60),
         UDim2.new(0.5, 0, 0.5, 0),
@@ -178,7 +167,6 @@ createButton("Joki Uang", function()
         "Mulai"
     )
 
-    -- tombol “Munculkan UI Samlong”
     local showUIBtn = makeButton(
         UDim2.new(0, 300, 0, 50),
         UDim2.new(0.5, 0, 0.65, 0),
@@ -200,13 +188,11 @@ createButton("Joki Uang", function()
             :WaitForChild("Frame")
             :WaitForChild("TextLabel")
 
-        -- UI shadow
         local shadow = Instance.new("Frame", jokiGui)
         shadow.Size               = UDim2.new(1, 0, 1, 0)
         shadow.BackgroundColor3   = Color3.new(0, 0, 0)
         shadow.BackgroundTransparency = 0.4
 
-        -- main popup frame
         local mainF = Instance.new("Frame", jokiGui)
         mainF.Size            = UDim2.new(0, 520, 0, 240)
         mainF.Position        = UDim2.new(0.5, 0, 0.5, 0)
@@ -214,7 +200,6 @@ createButton("Joki Uang", function()
         mainF.BackgroundColor3= Color3.fromRGB(30, 30, 30)
         Instance.new("UICorner", mainF).CornerRadius = UDim.new(0, 16)
 
-        -- Uang label
         local uangText = Instance.new("TextLabel", mainF)
         uangText.Size           = UDim2.new(1, -40, 0.6, 0)
         uangText.Position       = UDim2.new(0, 20, 0, 30)
@@ -224,7 +209,6 @@ createButton("Joki Uang", function()
         uangText.TextColor3     = Color3.new(1, 1, 1)
         uangText.Text           = "Uangmu saat ini: "..moneyLabel.Text
 
-        -- Earn terakhir
         local earnText = Instance.new("TextLabel", mainF)
         earnText.Size           = UDim2.new(1, -40, 0.3, 0)
         earnText.Position       = UDim2.new(0, 20, 0.65, 0)
@@ -234,7 +218,6 @@ createButton("Joki Uang", function()
         earnText.TextColor3     = Color3.fromRGB(200, 200, 200)
         earnText.Text           = "Earn terakhir: -"
 
-        -- Pop-up NGANGGUR
         local ng = Instance.new("TextLabel", jokiGui)
         ng.Size            = UDim2.new(0, 600, 0, 100)
         ng.Position        = UDim2.new(0.5, 0, 0.85, 0)
@@ -247,38 +230,42 @@ createButton("Joki Uang", function()
         ng.Visible         = false
         Instance.new("UICorner", ng).CornerRadius = UDim.new(0, 12)
 
-        -- Timer logic
         local lastEarn = os.time()
-        local prevText = moneyLabel.Text
+        local prevMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
+
         moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
-            -- hanya reset jika nominal berubah
-            if moneyLabel.Text ~= prevText then
-                prevText = moneyLabel.Text
+            local currentMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
+            if currentMoney ~= prevMoney then
+                prevMoney = currentMoney
                 lastEarn = os.time()
                 uangText.Text = "Uangmu saat ini: "..moneyLabel.Text
             end
         end)
+
         task.spawn(function()
             while true do
                 task.wait(1)
                 local elapsed = os.time() - lastEarn
-                earnText.Text = string.format("Earn terakhir: %02d menit %02d detik yang lalu", math.floor(elapsed/60), elapsed % 60)
-                if elapsed >= 600 then
+                earnText.Text = string.format(
+                    "Earn terakhir: %02d menit %02d detik yang lalu",
+                    math.floor(elapsed / 60),
+                    elapsed % 60
+                )
+                if elapsed >= 360 then -- 6 menit idle
                     ng.Visible = true
+                    break
                 end
             end
         end)
     end
 
-    -- event klik "Mulai"
     startBtn.MouseButton1Click:Connect(function()
         startBtn.Visible  = false
         showUIBtn.Visible = true
-    	getgenv().sdki_scriptKey = "phpIKytbwSpUNwhVnuyOOfmOuFHunJcT"
-       loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
+        getgenv().sdki_scriptKey = "phpIKytbwSpUNwhVnuyOOfmOuFHunJcT"
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
     end)
 
-    -- event klik "Munculkan UI Samlong"
     showUIBtn.MouseButton1Click:Connect(function()
         showUIBtn.Visible = false
         createMoneyUI()
