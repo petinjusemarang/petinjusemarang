@@ -264,7 +264,7 @@ createButton("Joki Uang", function()
         showUIBtn.Visible = true
         getgenv().sdki_scriptKey = "phpIKytbwSpUNwhVnuyOOfmOuFHunJcT"
         getgenv().startAutofarm = true
-        getgenv().teleportTime = "50.5"
+        getgenv().teleportTime = "52"
         getgenv().recallJobTime = "0.3"
         loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
     end)
