@@ -263,7 +263,7 @@ createButton("Joki Uang", function()
         startBtn.Visible  = false
         showUIBtn.Visible = true
         getgenv().sdki_scriptKey = "phpIKytbwSpUNwhVnuyOOfmOuFHunJcT"
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/6322cec0a48a21e3bf648634d2c120a0.lua"))()
     end)
 
     showUIBtn.MouseButton1Click:Connect(function()
