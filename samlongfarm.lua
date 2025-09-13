@@ -9,7 +9,7 @@ screenGui.Name               = "SamlongGui"
 screenGui.ZIndexBehavior     = Enum.ZIndexBehavior.Sibling
 screenGui.Parent             = player:WaitForChild("PlayerGui")
 
-local rootGui = screenGui  -- referensi ke GUI utama untuk hide/show
+local rootGui = screenGui -- referensi ke GUI utama untuk hide/show
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
@@ -126,18 +126,99 @@ local function createButton(text, callback)
     return btn
 end
 
--- ==== Joki Uang ====
-createButton("Joki Uang", function()
-    rootGui.Enabled = false
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
-    end
+-- Helper: overlay UI for Money display & idle timer (dipakai Joki Uang & Uang Jatim)
+local function mountMoneyOverlay(player, parentGui)
+    local playerGui  = player:WaitForChild("PlayerGui")
+    local moneyLabel = playerGui
+        :WaitForChild("Main")
+        :WaitForChild("Container")
+        :WaitForChild("Hub")
+        :WaitForChild("CashFrame")
+        :WaitForChild("Frame")
+        :WaitForChild("TextLabel")
+
+    local shadow = Instance.new("Frame", parentGui)
+    shadow.Size               = UDim2.new(1, 0, 1, 0)
+    shadow.BackgroundColor3   = Color3.new(0, 0, 0)
+    shadow.BackgroundTransparency = 0.4
+
+    local mainF = Instance.new("Frame", parentGui)
+    mainF.Size            = UDim2.new(0, 520, 0, 240)
+    mainF.Position        = UDim2.new(0.5, 0, 0.5, 0)
+    mainF.AnchorPoint     = Vector2.new(0.5, 0.5)
+    mainF.BackgroundColor3= Color3.fromRGB(30, 30, 30)
+    Instance.new("UICorner", mainF).CornerRadius = UDim.new(0, 16)
+
+    local uangText = Instance.new("TextLabel", mainF)
+    uangText.Size           = UDim2.new(1, -40, 0.6, 0)
+    uangText.Position       = UDim2.new(0, 20, 0, 30)
+    uangText.BackgroundTransparency = 1
+    uangText.Font           = Enum.Font.GothamBlack
+    uangText.TextScaled     = true
+    uangText.TextColor3     = Color3.new(1, 1, 1)
+    uangText.Text           = "Uangmu saat ini: "..moneyLabel.Text
+
+    local earnText = Instance.new("TextLabel", mainF)
+    earnText.Size           = UDim2.new(1, -40, 0.3, 0)
+    earnText.Position       = UDim2.new(0, 20, 0.65, 0)
+    earnText.BackgroundTransparency = 1
+    earnText.Font           = Enum.Font.GothamSemibold
+    earnText.TextScaled     = true
+    earnText.TextColor3     = Color3.fromRGB(200, 200, 200)
+    earnText.Text           = "Earn terakhir: -"
+
+    local ng = Instance.new("TextLabel", parentGui)
+    ng.Size            = UDim2.new(0, 600, 0, 100)
+    ng.Position        = UDim2.new(0.5, 0, 0.85, 0)
+    ng.AnchorPoint     = Vector2.new(0.5, 0.5)
+    ng.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    ng.Font            = Enum.Font.GothamBlack
+    ng.TextScaled      = true
+    ng.TextColor3      = Color3.new(1, 1, 1)
+    ng.Text            = "SUPIR NGANGGUR BOS!!!"
+    ng.Visible         = false
+    Instance.new("UICorner", ng).CornerRadius = UDim.new(0, 12)
+
+    local lastEarn = os.time()
+    local prevMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
+
+    moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
+        local currentMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
+        if currentMoney ~= prevMoney then
+            prevMoney = currentMoney
+            lastEarn = os.time()
+            uangText.Text = "Uangmu saat ini: "..moneyLabel.Text
+        end
+    end)
+
+    task.spawn(function()
+        while true do
+            task.wait(1)
+            local elapsed = os.time() - lastEarn
+            earnText.Text = string.format(
+                "Earn terakhir: %02d menit %02d detik yang lalu",
+                math.floor(elapsed / 60),
+                elapsed % 60
+            )
+            if elapsed >= 360 then -- 6 menit idle
+                ng.Visible = true
+                break
+            end
+        end
+    end)
+end
+
+-- Helper: buat overlay “start & show UI”
+local function mountJobOverlay(startText, onStart)
+    if not game:IsLoaded() then game.Loaded:Wait() end
     local Players  = game:GetService("Players")
     local CoreGui  = game:GetService("CoreGui")
-    local player   = Players.LocalPlayer or Players.PlayerAdded:Wait()
+    local lplayer  = Players.LocalPlayer or Players.PlayerAdded:Wait()
+
     if CoreGui:FindFirstChild("SamlongJokiUI") then
         CoreGui.SamlongJokiUI:Destroy()
     end
+
     local jokiGui = Instance.new("ScreenGui")
     jokiGui.Name               = "SamlongJokiUI"
     jokiGui.ResetOnSpawn       = false
@@ -161,10 +242,10 @@ createButton("Joki Uang", function()
     end
 
     local startBtn = makeButton(
-        UDim2.new(0, 200, 0, 60),
+        UDim2.new(0, 300, 0, 60),
         UDim2.new(0.5, 0, 0.5, 0),
         Color3.fromRGB(0, 170, 255),
-        "Mulai"
+        startText
     )
 
     local showUIBtn = makeButton(
@@ -177,98 +258,35 @@ createButton("Joki Uang", function()
     showUIBtn.AnchorPoint = Vector2.new(1, 1)
     showUIBtn.Position    = UDim2.new(1, -20, 1, -20)
 
-    -- fungsi buat money UI + timer + pop-up
-    local function createMoneyUI()
-        local playerGui  = player:WaitForChild("PlayerGui")
-        local moneyLabel = playerGui
-            :WaitForChild("Main")
-            :WaitForChild("Container")
-            :WaitForChild("Hub")
-            :WaitForChild("CashFrame")
-            :WaitForChild("Frame")
-            :WaitForChild("TextLabel")
-
-        local shadow = Instance.new("Frame", jokiGui)
-        shadow.Size               = UDim2.new(1, 0, 1, 0)
-        shadow.BackgroundColor3   = Color3.new(0, 0, 0)
-        shadow.BackgroundTransparency = 0.4
-
-        local mainF = Instance.new("Frame", jokiGui)
-        mainF.Size            = UDim2.new(0, 520, 0, 240)
-        mainF.Position        = UDim2.new(0.5, 0, 0.5, 0)
-        mainF.AnchorPoint     = Vector2.new(0.5, 0.5)
-        mainF.BackgroundColor3= Color3.fromRGB(30, 30, 30)
-        Instance.new("UICorner", mainF).CornerRadius = UDim.new(0, 16)
-
-        local uangText = Instance.new("TextLabel", mainF)
-        uangText.Size           = UDim2.new(1, -40, 0.6, 0)
-        uangText.Position       = UDim2.new(0, 20, 0, 30)
-        uangText.BackgroundTransparency = 1
-        uangText.Font           = Enum.Font.GothamBlack
-        uangText.TextScaled     = true
-        uangText.TextColor3     = Color3.new(1, 1, 1)
-        uangText.Text           = "Uangmu saat ini: "..moneyLabel.Text
-
-        local earnText = Instance.new("TextLabel", mainF)
-        earnText.Size           = UDim2.new(1, -40, 0.3, 0)
-        earnText.Position       = UDim2.new(0, 20, 0.65, 0)
-        earnText.BackgroundTransparency = 1
-        earnText.Font           = Enum.Font.GothamSemibold
-        earnText.TextScaled     = true
-        earnText.TextColor3     = Color3.fromRGB(200, 200, 200)
-        earnText.Text           = "Earn terakhir: -"
-
-        local ng = Instance.new("TextLabel", jokiGui)
-        ng.Size            = UDim2.new(0, 600, 0, 100)
-        ng.Position        = UDim2.new(0.5, 0, 0.85, 0)
-        ng.AnchorPoint     = Vector2.new(0.5, 0.5)
-        ng.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        ng.Font            = Enum.Font.GothamBlack
-        ng.TextScaled      = true
-        ng.TextColor3      = Color3.new(1, 1, 1)
-        ng.Text            = "SUPIR NGANGGUR BOS!!!"
-        ng.Visible         = false
-        Instance.new("UICorner", ng).CornerRadius = UDim.new(0, 12)
-
-        local lastEarn = os.time()
-        local prevMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
-
-        moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
-            local currentMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
-            if currentMoney ~= prevMoney then
-                prevMoney = currentMoney
-                lastEarn = os.time()
-                uangText.Text = "Uangmu saat ini: "..moneyLabel.Text
-            end
-        end)
-
-        task.spawn(function()
-            while true do
-                task.wait(1)
-                local elapsed = os.time() - lastEarn
-                earnText.Text = string.format(
-                    "Earn terakhir: %02d menit %02d detik yang lalu",
-                    math.floor(elapsed / 60),
-                    elapsed % 60
-                )
-                if elapsed >= 360 then -- 6 menit idle
-                    ng.Visible = true
-                    break
-                end
-            end
-        end)
-    end
-
     startBtn.MouseButton1Click:Connect(function()
         startBtn.Visible  = false
         showUIBtn.Visible = true
-        getgenv().sdki_scriptKey = "phpIKytbwSpUNwhVnuyOOfmOuFHunJcT"
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/6322cec0a48a21e3bf648634d2c120a0.lua"))()
+        -- jalankan fungsi start spesifik
+        pcall(onStart)
     end)
 
     showUIBtn.MouseButton1Click:Connect(function()
         showUIBtn.Visible = false
-        createMoneyUI()
+        mountMoneyOverlay(lplayer, jokiGui)
+    end)
+end
+
+-- ==== Joki Uang ====
+createButton("Uang Jateng", function()
+    rootGui.Enabled = false
+    mountJobOverlay("Mulai", function()
+        getgenv().sdki_scriptKey = "phpIKytbwSpUNwhVnuyOOfmOuFHunJcT"
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/6322cec0a48a21e3bf648634d2c120a0.lua"))()
+    end)
+end)
+
+-- ==== Uang Jatim (replace Joki Mancing) ====
+createButton("Uang Jatim", function()
+    rootGui.Enabled = false
+    mountJobOverlay("Mulai (jangan lupa reset HWID yaaa)", function()
+        -- Execute script yang diminta
+        script_key = "phplKytbwSpUNwhVruyoOFmOuFHunJcT";
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
     end)
 end)
 
@@ -276,12 +294,6 @@ end)
 createButton("Joki Minigame", function()
     rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmini.lua"))()
-end)
-
--- ==== Joki Mancing ====
-createButton("Joki Mancing", function()
-    rootGui.Enabled = false
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmancing.lua"))()
 end)
 
 -- Status Label
