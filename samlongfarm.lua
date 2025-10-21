@@ -286,7 +286,7 @@ createButton("Uang Jatim", function()
     mountJobOverlay("Mulai (jangan lupa reset HWID yaaa)", function()
         -- Execute script yang diminta
         script_key = "phplKytbwSpUNwhVruyoOFmOuFHunJcT";
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/73ac898579f2f0690c1fb1e0d209d1c8.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/bimoraa/Euphoria/refs/heads/main/loader.luau"))()
     end)
 end)
 
