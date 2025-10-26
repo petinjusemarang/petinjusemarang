@@ -276,7 +276,7 @@ createButton("Uang Jateng", function()
     rootGui.Enabled = false
     mountJobOverlay("Mulai", function()
         getgenv().sdki_scriptKey = "phpIKytbwSpUNwhVnuyOOfmOuFHunJcT"
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/bimoraa/Euphoria/refs/heads/main/loader.luau"))()
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/6322cec0a48a21e3bf648634d2c120a0.lua"))()
     end)
 end)
 
