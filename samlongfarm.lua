@@ -272,11 +272,11 @@ local function mountJobOverlay(startText, onStart)
 end
 
 -- ==== Joki Uang ====
-createButton("Uang Jateng", function()
+createButton("Uang Temp", function()
     rootGui.Enabled = false
     mountJobOverlay("Mulai", function()
-        script_key="phplKytbwSpUNwhVruyoOFmOuFHunJcT";
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/6322cec0a48a21e3bf648634d2c120a0.lua"))()
+    script_key="ARL1dcb152f6bed8e1d009836d32";
+    loadstring(game:HttpGet("https://pandadevelopment.net/virtual/file/e05bef9ffd37684c"))()
     end)
 end)
 
