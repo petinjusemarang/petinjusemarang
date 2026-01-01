@@ -272,10 +272,10 @@ local function mountJobOverlay(startText, onStart)
 end
 
 -- ==== Joki Uang ====
-createButton("Uang Temp", function()
+createButton("Script cadangan", function()
     rootGui.Enabled = false
     mountJobOverlay("Mulai", function()
-    script_key="ARL1dcb152f6bed8e1d009836d32";
+    sscript_key="ARL587cb17a235da7ed2503f4f80";
     loadstring(game:HttpGet("https://pandadevelopment.net/virtual/file/e05bef9ffd37684c"))()
     end)
 end)
