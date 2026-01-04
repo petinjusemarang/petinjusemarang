@@ -275,7 +275,7 @@ end
 createButton("Script cadangan", function()
     rootGui.Enabled = false
     mountJobOverlay("Mulai", function()
-    script_key="DAzOAfwESLXoAThpgEnnTOcAGZGVzaOb";
+    script_key="ARL1dcb152f6bed8e1d009836d32";
     loadstring(game:HttpGet("https://pandadevelopment.net/virtual/file/e05bef9ffd37684c"))()
     end)
 end)
@@ -285,7 +285,7 @@ createButton("Uang Jatim", function()
     rootGui.Enabled = false
     mountJobOverlay("Mulai (jangan lupa reset HWID yaaa)", function()
         -- Execute script yang diminta
-        script_key="ARL1dcb152f6bed8e1d009836d32";
+        script_key="DAzOAfwESLXoAThpgEnnTOcAGZGVzaOb";
         loadstring(game:HttpGet("https://raw.githubusercontent.com/bimoraa/Euphoria/refs/heads/main/loader.luau"))()
     end)
 end)
