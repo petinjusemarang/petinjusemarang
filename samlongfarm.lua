@@ -276,7 +276,6 @@ createButton("Limited Snipe", function()
     rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/buylimited.lua"))()
     end)
-end)
 
 -- ==== Uang Jatim (replace Joki Mancing) ====
 createButton("Uang Jatim", function()
