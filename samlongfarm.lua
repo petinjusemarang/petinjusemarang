@@ -272,11 +272,9 @@ local function mountJobOverlay(startText, onStart)
 end
 
 -- ==== Joki Uang ====
-createButton("Script cadangan", function()
+createButton("Limited Snipe", function()
     rootGui.Enabled = false
-    mountJobOverlay("Mulai", function()
-    script_key="ARL587cb17a235da7ed2503f4f80";
-    loadstring(game:HttpGet("https://pandadevelopment.net/virtual/file/e05bef9ffd37684c"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/buylimited.lua"))()
     end)
 end)
 
