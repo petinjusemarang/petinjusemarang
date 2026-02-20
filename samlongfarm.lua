@@ -274,6 +274,12 @@ end
 -- ==== Joki Uang ====
 createButton("Limited Snipe", function()
     rootGui.Enabled = false
+    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5b6c215f1b2f5b4c696abed7a89c95bf.lua"))()
+    end)
+
+-- ==== Joki Uang ====
+createButton("Uang NO HWID", function()
+    rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/buylimited.lua"))()
     end)
 
