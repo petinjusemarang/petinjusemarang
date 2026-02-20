@@ -280,7 +280,7 @@ createButton("Limited Snipe", function()
 -- ==== Uang Jatim (replace Joki Mancing) ====
 createButton("Uang Jatim", function()
     rootGui.Enabled = false
-    -- mountJobOverlay("Mulai (jangan lupa reset HWID yaaa)", function()
+      mountJobOverlay("Mulai (Langsung start aaja)", function()
         -- Execute script yang diminta
         loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5b6c215f1b2f5b4c696abed7a89c95bf.lua"))()
        -- script_key="DAzOAfwESLXoAThpgEnnTOcAGZGVzaOb";
