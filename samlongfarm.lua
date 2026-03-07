@@ -295,6 +295,13 @@ createButton("Joki Minigame", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmini.lua"))()
 end)
 
+-- ==== Quest Danur ====
+createButton("Quest Danur", function()
+    rootGui.Enabled = false
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur.lua"))()
+    end)
+
+
 -- Status Label
 local statusLabel = Instance.new("TextLabel", mainFrame)
 statusLabel.Name            = "Status"
