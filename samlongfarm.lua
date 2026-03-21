@@ -1,46 +1,103 @@
--- GUI Samlong CDID with Rounded Corners, Clean Layout & Draggable
+-- GUI Samlong CDID v2 — Modern Upgrade
+-- Perubahan: visual upgrade, tween animations, better hover, fix callback execution
+-- Fitur tetap sama persis dengan versi lama
+
 local Players           = game:GetService("Players")
 local UserInputService  = game:GetService("UserInputService")
+local TweenService      = game:GetService("TweenService")
 local player            = Players.LocalPlayer
 
--- Root ScreenGui
+-- ═══════════════════════════════════
+--  CONFIG (gampang di-custom)
+-- ═══════════════════════════════════
+local CONFIG = {
+    BgPrimary    = Color3.fromRGB(18, 18, 24),
+    BgHeader     = Color3.fromRGB(12, 12, 18),
+    BgButton     = Color3.fromRGB(45, 135, 240),
+    BgBtnHover   = Color3.fromRGB(65, 155, 255),
+    BgBtnDanur   = Color3.fromRGB(220, 70, 60),
+    BgBtnDanurH  = Color3.fromRGB(240, 90, 80),
+    BgBtnGreen   = Color3.fromRGB(40, 170, 90),
+    BgBtnGreenH  = Color3.fromRGB(55, 195, 110),
+    BgBtnPurple  = Color3.fromRGB(140, 80, 220),
+    BgBtnPurpleH = Color3.fromRGB(160, 100, 240),
+    TextPrimary  = Color3.fromRGB(240, 240, 245),
+    TextSecondary= Color3.fromRGB(180, 180, 190),
+    TextMuted    = Color3.fromRGB(100, 100, 115),
+    Border       = Color3.fromRGB(45, 45, 58),
+    Separator    = Color3.fromRGB(35, 35, 48),
+    StatusBg     = Color3.fromRGB(12, 12, 18),
+    Danger       = Color3.fromRGB(240, 70, 70),
+    Success      = Color3.fromRGB(50, 200, 120),
+    TweenSpeed   = 0.2,
+}
+
+-- ═══════════════════════════════════
+--  UTILITY FUNCTIONS
+-- ═══════════════════════════════════
+local function tween(obj, props, duration)
+    local info = TweenInfo.new(duration or CONFIG.TweenSpeed, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    TweenService:Create(obj, info, props):Play()
+end
+
+local function addCorner(parent, radius)
+    local c = Instance.new("UICorner", parent)
+    c.CornerRadius = UDim.new(0, radius or 10)
+    return c
+end
+
+local function addStroke(parent, color, thickness)
+    local s = Instance.new("UIStroke", parent)
+    s.Color     = color or CONFIG.Border
+    s.Thickness = thickness or 1.5
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    return s
+end
+
+-- ═══════════════════════════════════
+--  ROOT SCREEN GUI
+-- ═══════════════════════════════════
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name               = "SamlongGui"
 screenGui.ZIndexBehavior     = Enum.ZIndexBehavior.Sibling
+screenGui.ResetOnSpawn       = false
 screenGui.Parent             = player:WaitForChild("PlayerGui")
 
-local rootGui = screenGui -- referensi ke GUI utama untuk hide/show
+local rootGui = screenGui
 
--- Main Frame
+-- ═══════════════════════════════════
+--  MAIN FRAME
+-- ═══════════════════════════════════
 local mainFrame = Instance.new("Frame")
-mainFrame.Name            = "MainFrame"
-mainFrame.Size            = UDim2.new(0, 320, 0, 300)
-mainFrame.Position        = UDim2.new(0.5, -160, 0.5, -150)
-mainFrame.BackgroundColor3= Color3.fromRGB(25, 25, 30)
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent          = screenGui
+mainFrame.Name               = "MainFrame"
+mainFrame.Size               = UDim2.new(0, 340, 0, 340)
+mainFrame.Position           = UDim2.new(0.5, -170, 0.5, -170)
+mainFrame.BackgroundColor3   = CONFIG.BgPrimary
+mainFrame.BorderSizePixel    = 0
+mainFrame.ClipsDescendants   = true
+mainFrame.Parent             = screenGui
+addCorner(mainFrame, 14)
+addStroke(mainFrame, CONFIG.Border, 2)
 
--- Rounded Corners & Border Stroke
-local uiCornerMain = Instance.new("UICorner", mainFrame)
-uiCornerMain.CornerRadius = UDim.new(0, 12)
-local uiStrokeMain = Instance.new("UIStroke", mainFrame)
-uiStrokeMain.Thickness   = 2
-uiStrokeMain.Color       = Color3.fromRGB(50, 50, 60)
-
--- Drag Functionality
+-- ═══════════════════════════════════
+--  DRAG FUNCTIONALITY
+-- ═══════════════════════════════════
 local dragging, dragStart, startPos = false, nil, nil
+
 local function updateDrag(input)
     local delta = input.Position - dragStart
     mainFrame.Position = UDim2.new(
-        startPos.X.Scale,
-        startPos.X.Offset + delta.X,
-        startPos.Y.Scale,
-        startPos.Y.Offset + delta.Y
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
     )
 end
+
 mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging, dragStart, startPos = true, input.Position, mainFrame.Position
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging  = true
+        dragStart = input.Position
+        startPos  = mainFrame.Position
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -48,87 +105,166 @@ mainFrame.InputBegan:Connect(function(input)
         end)
     end
 end)
+
 mainFrame.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch) then
         updateDrag(input)
     end
 end)
+
 UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch) then
         updateDrag(input)
     end
 end)
 
--- Title Bar & Close Button
+-- ═══════════════════════════════════
+--  TITLE BAR
+-- ═══════════════════════════════════
 local titleBar = Instance.new("Frame", mainFrame)
-titleBar.Name            = "TitleBar"
-titleBar.Size            = UDim2.new(1, 0, 0, 40)
-titleBar.BackgroundColor3= Color3.fromRGB(18, 18, 22)
-titleBar.BorderSizePixel = 0
-local uiCornerTitle = Instance.new("UICorner", titleBar)
-uiCornerTitle.CornerRadius = UDim.new(0, 12)
+titleBar.Name               = "TitleBar"
+titleBar.Size               = UDim2.new(1, 0, 0, 42)
+titleBar.BackgroundColor3   = CONFIG.BgHeader
+titleBar.BorderSizePixel    = 0
+addCorner(titleBar, 14)
 
+-- Fill bawah title bar biar ga ada gap
+local titleFill = Instance.new("Frame", titleBar)
+titleFill.Size               = UDim2.new(1, 0, 0, 14)
+titleFill.Position           = UDim2.new(0, 0, 1, -14)
+titleFill.BackgroundColor3   = CONFIG.BgHeader
+titleFill.BorderSizePixel    = 0
+
+-- Separator
+local sep = Instance.new("Frame", mainFrame)
+sep.Size               = UDim2.new(1, -20, 0, 1)
+sep.Position           = UDim2.new(0, 10, 0, 42)
+sep.BackgroundColor3   = CONFIG.Separator
+sep.BorderSizePixel    = 0
+
+-- Accent dot
+local dot = Instance.new("Frame", titleBar)
+dot.Size               = UDim2.new(0, 8, 0, 8)
+dot.Position           = UDim2.new(0, 14, 0.5, -4)
+dot.BackgroundColor3   = CONFIG.BgButton
+dot.BorderSizePixel    = 0
+addCorner(dot, 4)
+
+-- Title text
 local titleLabel = Instance.new("TextLabel", titleBar)
-titleLabel.Size               = UDim2.new(1, -40, 1, 0)
-titleLabel.Position           = UDim2.new(0, 12, 0, 0)
+titleLabel.Size               = UDim2.new(1, -90, 1, 0)
+titleLabel.Position           = UDim2.new(0, 30, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Font               = Enum.Font.GothamBold
 titleLabel.Text               = "SAMLONG CDID"
-titleLabel.TextColor3         = Color3.fromRGB(240, 240, 245)
-titleLabel.TextSize           = 20
+titleLabel.TextColor3         = CONFIG.TextPrimary
+titleLabel.TextSize           = 17
+titleLabel.TextXAlignment     = Enum.TextXAlignment.Left
 
+-- Close Button (X)
 local closeButton = Instance.new("TextButton", titleBar)
 closeButton.Name               = "CloseBtn"
-closeButton.Size               = UDim2.new(0, 30, 0, 30)
-closeButton.Position           = UDim2.new(1, -38, 0, 5)
+closeButton.Size               = UDim2.new(0, 28, 0, 28)
+closeButton.Position           = UDim2.new(1, -36, 0.5, -14)
+closeButton.BackgroundColor3   = CONFIG.Danger
 closeButton.BackgroundTransparency = 1
 closeButton.Font               = Enum.Font.GothamBold
 closeButton.Text               = "✕"
-closeButton.TextColor3         = Color3.fromRGB(200, 200, 205)
-closeButton.TextSize           = 18
+closeButton.TextColor3         = CONFIG.TextSecondary
+closeButton.TextSize           = 15
+closeButton.BorderSizePixel    = 0
+closeButton.AutoButtonColor    = false
+addCorner(closeButton, 6)
+
 closeButton.MouseEnter:Connect(function()
-    closeButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+    tween(closeButton, {BackgroundTransparency = 0, TextColor3 = Color3.new(1,1,1)}, 0.15)
 end)
 closeButton.MouseLeave:Connect(function()
-    closeButton.TextColor3 = Color3.fromRGB(200, 200, 205)
+    tween(closeButton, {BackgroundTransparency = 1, TextColor3 = CONFIG.TextSecondary}, 0.15)
 end)
 closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
+    tween(mainFrame, {Size = UDim2.new(0, 340, 0, 0), BackgroundTransparency = 1}, 0.3)
+    task.delay(0.35, function()
+        screenGui:Destroy()
+    end)
 end)
 
--- Content Frame with List Layout
-local contentFrame = Instance.new("Frame", mainFrame)
-contentFrame.Name             = "Content"
+-- ═══════════════════════════════════
+--  CONTENT FRAME (Scrollable)
+-- ═══════════════════════════════════
+local contentFrame = Instance.new("ScrollingFrame", mainFrame)
+contentFrame.Name                  = "Content"
 contentFrame.BackgroundTransparency = 1
-contentFrame.Position         = UDim2.new(0, 0, 0, 50)
-contentFrame.Size             = UDim2.new(1, 0, 1, -80)
+contentFrame.Position              = UDim2.new(0, 0, 0, 52)
+contentFrame.Size                  = UDim2.new(1, 0, 1, -88)
+contentFrame.BorderSizePixel       = 0
+contentFrame.ScrollBarThickness    = 3
+contentFrame.ScrollBarImageColor3  = CONFIG.BgButton
+contentFrame.CanvasSize            = UDim2.new(0, 0, 0, 0)
+contentFrame.AutomaticCanvasSize   = Enum.AutomaticSize.Y
 
 local listLayout = Instance.new("UIListLayout", contentFrame)
-listLayout.Padding            = UDim.new(0, 12)
-listLayout.HorizontalAlignment= Enum.HorizontalAlignment.Center
-listLayout.SortOrder          = Enum.SortOrder.LayoutOrder
+listLayout.Padding             = UDim.new(0, 10)
+listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+listLayout.SortOrder           = Enum.SortOrder.LayoutOrder
 
--- Utility to create buttons
-local function createButton(text, callback)
+local contentPadding = Instance.new("UIPadding", contentFrame)
+contentPadding.PaddingTop    = UDim.new(0, 6)
+contentPadding.PaddingBottom = UDim.new(0, 6)
+
+-- ═══════════════════════════════════
+--  BUTTON FACTORY
+-- ═══════════════════════════════════
+local buttonOrder = 0
+
+local function createButton(text, color, hoverColor, callback)
+    buttonOrder = buttonOrder + 1
+    local bgColor = color or CONFIG.BgButton
+    local bgHover = hoverColor or CONFIG.BgBtnHover
+
     local btn = Instance.new("TextButton", contentFrame)
-    btn.Name            = text:gsub("%s+", "")
-    btn.AutoButtonColor = true
-    btn.Size            = UDim2.new(0, 260, 0, 40)
-    btn.BackgroundColor3= Color3.fromRGB(45, 135, 240)
-    btn.Text            = text
-    btn.Font            = Enum.Font.Gotham
-    btn.TextColor3      = Color3.fromRGB(255, 255, 255)
-    btn.TextSize        = 16
-    btn.BorderSizePixel = 0
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0, 8)
-    btn.MouseButton1Click:Connect(callback)
+    btn.Name               = text:gsub("%s+", "")
+    btn.LayoutOrder        = buttonOrder
+    btn.AutoButtonColor    = false
+    btn.Size               = UDim2.new(0, 280, 0, 42)
+    btn.BackgroundColor3   = bgColor
+    btn.Text               = text
+    btn.Font               = Enum.Font.GothamSemibold
+    btn.TextColor3         = Color3.new(1, 1, 1)
+    btn.TextSize           = 15
+    btn.BorderSizePixel    = 0
+    addCorner(btn, 10)
+
+    -- Hover
+    btn.MouseEnter:Connect(function()
+        tween(btn, {BackgroundColor3 = bgHover, Size = UDim2.new(0, 284, 0, 42)}, 0.15)
+    end)
+    btn.MouseLeave:Connect(function()
+        tween(btn, {BackgroundColor3 = bgColor, Size = UDim2.new(0, 280, 0, 42)}, 0.15)
+    end)
+
+    -- Click
+    btn.MouseButton1Click:Connect(function()
+        -- click pulse
+        tween(btn, {Size = UDim2.new(0, 274, 0, 40)}, 0.05)
+        task.delay(0.06, function()
+            tween(btn, {Size = UDim2.new(0, 280, 0, 42)}, 0.1)
+        end)
+        if callback then
+            task.spawn(callback)
+        end
+    end)
+
     return btn
 end
 
--- Helper: overlay UI for Money display & idle timer (dipakai Joki Uang & Uang Jatim)
-local function mountMoneyOverlay(player, parentGui)
-    local playerGui  = player:WaitForChild("PlayerGui")
+-- ═══════════════════════════════════
+--  MONEY OVERLAY HELPER (dari script lama)
+-- ═══════════════════════════════════
+local function mountMoneyOverlay(plr, parentGui)
+    local playerGui  = plr:WaitForChild("PlayerGui")
     local moneyLabel = playerGui
         :WaitForChild("Main")
         :WaitForChild("Container")
@@ -138,55 +274,55 @@ local function mountMoneyOverlay(player, parentGui)
         :WaitForChild("TextLabel")
 
     local shadow = Instance.new("Frame", parentGui)
-    shadow.Size               = UDim2.new(1, 0, 1, 0)
-    shadow.BackgroundColor3   = Color3.new(0, 0, 0)
-    shadow.BackgroundTransparency = 0.4
+    shadow.Size                    = UDim2.new(1, 0, 1, 0)
+    shadow.BackgroundColor3        = Color3.new(0, 0, 0)
+    shadow.BackgroundTransparency  = 0.4
 
     local mainF = Instance.new("Frame", parentGui)
-    mainF.Size            = UDim2.new(0, 520, 0, 240)
-    mainF.Position        = UDim2.new(0.5, 0, 0.5, 0)
-    mainF.AnchorPoint     = Vector2.new(0.5, 0.5)
-    mainF.BackgroundColor3= Color3.fromRGB(30, 30, 30)
-    Instance.new("UICorner", mainF).CornerRadius = UDim.new(0, 16)
+    mainF.Size               = UDim2.new(0, 520, 0, 240)
+    mainF.Position           = UDim2.new(0.5, 0, 0.5, 0)
+    mainF.AnchorPoint        = Vector2.new(0.5, 0.5)
+    mainF.BackgroundColor3   = Color3.fromRGB(30, 30, 30)
+    addCorner(mainF, 16)
 
     local uangText = Instance.new("TextLabel", mainF)
-    uangText.Size           = UDim2.new(1, -40, 0.6, 0)
-    uangText.Position       = UDim2.new(0, 20, 0, 30)
+    uangText.Size                    = UDim2.new(1, -40, 0.6, 0)
+    uangText.Position               = UDim2.new(0, 20, 0, 30)
     uangText.BackgroundTransparency = 1
-    uangText.Font           = Enum.Font.GothamBlack
-    uangText.TextScaled     = true
-    uangText.TextColor3     = Color3.new(1, 1, 1)
-    uangText.Text           = "Uangmu saat ini: "..moneyLabel.Text
+    uangText.Font                   = Enum.Font.GothamBlack
+    uangText.TextScaled             = true
+    uangText.TextColor3             = Color3.new(1, 1, 1)
+    uangText.Text                   = "Uangmu saat ini: "..moneyLabel.Text
 
     local earnText = Instance.new("TextLabel", mainF)
-    earnText.Size           = UDim2.new(1, -40, 0.3, 0)
-    earnText.Position       = UDim2.new(0, 20, 0.65, 0)
+    earnText.Size                    = UDim2.new(1, -40, 0.3, 0)
+    earnText.Position               = UDim2.new(0, 20, 0.65, 0)
     earnText.BackgroundTransparency = 1
-    earnText.Font           = Enum.Font.GothamSemibold
-    earnText.TextScaled     = true
-    earnText.TextColor3     = Color3.fromRGB(200, 200, 200)
-    earnText.Text           = "Earn terakhir: -"
+    earnText.Font                   = Enum.Font.GothamSemibold
+    earnText.TextScaled             = true
+    earnText.TextColor3             = Color3.fromRGB(200, 200, 200)
+    earnText.Text                   = "Earn terakhir: -"
 
     local ng = Instance.new("TextLabel", parentGui)
-    ng.Size            = UDim2.new(0, 600, 0, 100)
-    ng.Position        = UDim2.new(0.5, 0, 0.85, 0)
-    ng.AnchorPoint     = Vector2.new(0.5, 0.5)
-    ng.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    ng.Font            = Enum.Font.GothamBlack
-    ng.TextScaled      = true
-    ng.TextColor3      = Color3.new(1, 1, 1)
-    ng.Text            = "SUPIR NGANGGUR BOS!!!"
-    ng.Visible         = false
-    Instance.new("UICorner", ng).CornerRadius = UDim.new(0, 12)
+    ng.Size               = UDim2.new(0, 600, 0, 100)
+    ng.Position           = UDim2.new(0.5, 0, 0.85, 0)
+    ng.AnchorPoint        = Vector2.new(0.5, 0.5)
+    ng.BackgroundColor3   = Color3.fromRGB(255, 0, 0)
+    ng.Font               = Enum.Font.GothamBlack
+    ng.TextScaled         = true
+    ng.TextColor3         = Color3.new(1, 1, 1)
+    ng.Text               = "SUPIR NGANGGUR BOS!!!"
+    ng.Visible            = false
+    addCorner(ng, 12)
 
-    local lastEarn = os.time()
+    local lastEarn  = os.time()
     local prevMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
 
     moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
         local currentMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
         if currentMoney ~= prevMoney then
             prevMoney = currentMoney
-            lastEarn = os.time()
+            lastEarn  = os.time()
             uangText.Text = "Uangmu saat ini: "..moneyLabel.Text
         end
     end)
@@ -200,7 +336,7 @@ local function mountMoneyOverlay(player, parentGui)
                 math.floor(elapsed / 60),
                 elapsed % 60
             )
-            if elapsed >= 360 then -- 6 menit idle
+            if elapsed >= 360 then
                 ng.Visible = true
                 break
             end
@@ -208,12 +344,13 @@ local function mountMoneyOverlay(player, parentGui)
     end)
 end
 
--- Helper: buat overlay “start & show UI”
+-- ═══════════════════════════════════
+--  JOB OVERLAY HELPER (dari script lama)
+-- ═══════════════════════════════════
 local function mountJobOverlay(startText, onStart)
     if not game:IsLoaded() then game.Loaded:Wait() end
-    local Players  = game:GetService("Players")
-    local CoreGui  = game:GetService("CoreGui")
-    local lplayer  = Players.LocalPlayer or Players.PlayerAdded:Wait()
+    local CoreGui = game:GetService("CoreGui")
+    local lplayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
     if CoreGui:FindFirstChild("SamlongJokiUI") then
         CoreGui.SamlongJokiUI:Destroy()
@@ -225,43 +362,42 @@ local function mountJobOverlay(startText, onStart)
     jokiGui.ZIndexBehavior     = Enum.ZIndexBehavior.Global
     jokiGui.Parent             = CoreGui
 
-    local function makeButton(size, pos, color, text)
+    local function makeOverlayBtn(size, pos, bgColor, text)
         local btn = Instance.new("TextButton")
-        btn.Size            = size
-        btn.Position        = pos
-        btn.AnchorPoint     = Vector2.new(0.5, 0.5)
-        btn.BackgroundColor3= color
-        btn.Text            = text
-        btn.TextColor3      = Color3.new(1, 1, 1)
-        btn.Font            = Enum.Font.GothamBold
-        btn.TextScaled      = true
-        btn.ZIndex          = 100
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
-        btn.Parent          = jokiGui
+        btn.Size               = size
+        btn.Position           = pos
+        btn.AnchorPoint        = Vector2.new(0.5, 0.5)
+        btn.BackgroundColor3   = bgColor
+        btn.Text               = text
+        btn.TextColor3         = Color3.new(1, 1, 1)
+        btn.Font               = Enum.Font.GothamBold
+        btn.TextScaled         = true
+        btn.ZIndex             = 100
+        btn.AutoButtonColor    = false
+        addCorner(btn, 12)
+        btn.Parent             = jokiGui
         return btn
     end
 
-    local startBtn = makeButton(
+    local startBtn = makeOverlayBtn(
         UDim2.new(0, 300, 0, 60),
         UDim2.new(0.5, 0, 0.5, 0),
         Color3.fromRGB(0, 170, 255),
         startText
     )
 
-    local showUIBtn = makeButton(
+    local showUIBtn = makeOverlayBtn(
         UDim2.new(0, 300, 0, 50),
-        UDim2.new(0.5, 0, 0.65, 0),
+        UDim2.new(1, -170, 1, -45),
         Color3.fromRGB(255, 170, 0),
         "Munculkan UI Samlong"
     )
-    showUIBtn.Visible = false
-    showUIBtn.AnchorPoint = Vector2.new(1, 1)
-    showUIBtn.Position    = UDim2.new(1, -20, 1, -20)
+    showUIBtn.Visible     = false
+    showUIBtn.AnchorPoint = Vector2.new(0.5, 0.5)
 
     startBtn.MouseButton1Click:Connect(function()
         startBtn.Visible  = false
         showUIBtn.Visible = true
-        -- jalankan fungsi start spesifik
         pcall(onStart)
     end)
 
@@ -271,62 +407,93 @@ local function mountJobOverlay(startText, onStart)
     end)
 end
 
--- ==== Joki Uang ====
-createButton("Limited Snipe", function()
+-- ═══════════════════════════════════
+--  BUTTONS (sama persis dengan versi lama)
+-- ═══════════════════════════════════
+
+-- 1) Limited Snipe
+createButton("Limited Snipe", CONFIG.BgButton, CONFIG.BgBtnHover, function()
     rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/buylimited.lua"))()
-    end)
+end)
 
--- ==== Uang Jatim (replace Joki Mancing) ====
-createButton("Uang Jatim", function()
+-- 2) Uang Jatim
+createButton("Uang Jatim", CONFIG.BgBtnGreen, CONFIG.BgBtnGreenH, function()
     rootGui.Enabled = false
-      mountJobOverlay("Mulai (Langsung start aaja)", function()
-        -- Execute script yang diminta
+    mountJobOverlay("Mulai (Langsung start aaja)", function()
         loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5b6c215f1b2f5b4c696abed7a89c95bf.lua"))()
-       -- script_key="DAzOAfwESLXoAThpgEnnTOcAGZGVzaOb";
-        -- loadstring(game:HttpGet("https://raw.githubusercontent.com/bimoraa/Euphoria/refs/heads/main/loader.luau"))()
-
     end)
 end)
 
--- ==== Joki Minigame ====
-createButton("Joki Minigame", function()
+-- 3) Joki Minigame
+createButton("Joki Minigame", CONFIG.BgBtnPurple, CONFIG.BgBtnPurpleH, function()
     rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmini.lua"))()
 end)
 
--- ==== Quest Danur ====
-createButton("Quest Danur", function()
-    -- hapus tombol lama (biar clean)
+-- 4) Quest Danur (sub-menu)
+createButton("Quest Danur", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
+    -- Hapus tombol lama
     for _, child in pairs(contentFrame:GetChildren()) do
         if child:IsA("TextButton") then
             child:Destroy()
         end
     end
+    buttonOrder = 0
 
-    -- tombol Part 1
-    createButton("Danur Part 1", function()
+    createButton("Danur Part 1", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
         rootGui.Enabled = false
         loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur.lua"))()
     end)
 
-    -- tombol Part 2
-    createButton("Danur Part 2", function()
+    createButton("Danur Part 2", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
         rootGui.Enabled = false
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur2.lua"))()
+         loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur2.lua"))()
     end)
 end)
 
--- Status Label
-local statusLabel = Instance.new("TextLabel", mainFrame)
-statusLabel.Name            = "Status"
-statusLabel.Size            = UDim2.new(1, 0, 0, 30)
-statusLabel.Position        = UDim2.new(0, 0, 1, -30)
-statusLabel.BackgroundColor3= Color3.fromRGB(18, 18, 22)
-statusLabel.BorderSizePixel = 0
-local statusCorner = Instance.new("UICorner", statusLabel)
-statusCorner.CornerRadius   = UDim.new(0, 12)
-statusLabel.Font            = Enum.Font.Gotham
-statusLabel.Text            = "Ready"
-statusLabel.TextColor3      = Color3.fromRGB(200, 200, 205)
-statusLabel.TextSize        = 14
+-- ═══════════════════════════════════
+--  STATUS BAR (Bottom)
+-- ═══════════════════════════════════
+local statusBar = Instance.new("Frame", mainFrame)
+statusBar.Name               = "StatusBar"
+statusBar.Size               = UDim2.new(1, 0, 0, 30)
+statusBar.Position           = UDim2.new(0, 0, 1, -30)
+statusBar.BackgroundColor3   = CONFIG.StatusBg
+statusBar.BorderSizePixel    = 0
+addCorner(statusBar, 14)
+
+local statusFill = Instance.new("Frame", statusBar)
+statusFill.Size               = UDim2.new(1, 0, 0, 14)
+statusFill.Position           = UDim2.new(0, 0, 0, 0)
+statusFill.BackgroundColor3   = CONFIG.StatusBg
+statusFill.BorderSizePixel    = 0
+
+-- Status dot (green = ready)
+local statusDot = Instance.new("Frame", statusBar)
+statusDot.Size               = UDim2.new(0, 6, 0, 6)
+statusDot.Position           = UDim2.new(0, 12, 0.5, -3)
+statusDot.BackgroundColor3   = CONFIG.Success
+statusDot.BorderSizePixel    = 0
+addCorner(statusDot, 3)
+
+local statusLabel = Instance.new("TextLabel", statusBar)
+statusLabel.Size               = UDim2.new(1, -24, 1, 0)
+statusLabel.Position           = UDim2.new(0, 24, 0, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font               = Enum.Font.Gotham
+statusLabel.Text               = "Ready"
+statusLabel.TextColor3         = CONFIG.TextMuted
+statusLabel.TextSize           = 12
+statusLabel.TextXAlignment     = Enum.TextXAlignment.Left
+
+-- ═══════════════════════════════════
+--  OPEN ANIMATION
+-- ═══════════════════════════════════
+local targetSize = mainFrame.Size
+mainFrame.Size = UDim2.new(0, 340, 0, 0)
+mainFrame.BackgroundTransparency = 0.5
+
+task.delay(0.05, function()
+    tween(mainFrame, {Size = targetSize, BackgroundTransparency = 0}, 0.4)
+end)
