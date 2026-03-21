@@ -297,10 +297,25 @@ end)
 
 -- ==== Quest Danur ====
 createButton("Quest Danur", function()
-    rootGui.Enabled = false
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur.lua"))()
+    -- hapus tombol lama (biar clean)
+    for _, child in pairs(contentFrame:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+
+    -- tombol Part 1
+    createButton("Danur Part 1", function()
+        rootGui.Enabled = false
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur.lua"))()
     end)
 
+    -- tombol Part 2
+    createButton("Danur Part 2", function()
+        rootGui.Enabled = false
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur2.lua"))()
+    end)
+end)
 
 -- Status Label
 local statusLabel = Instance.new("TextLabel", mainFrame)
