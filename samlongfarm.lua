@@ -432,7 +432,7 @@ createButton("Joki Minigame", CONFIG.BgBtnPurple, CONFIG.BgBtnPurpleH, function(
 end)
 
 -- 4) Quest Danur (sub-menu)
-createButton("Quest Danur", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
+createButton("Quest & ramadhan", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
     -- Hapus tombol lama
     for _, child in pairs(contentFrame:GetChildren()) do
         if child:IsA("TextButton") then
@@ -446,9 +446,9 @@ createButton("Quest Danur", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur.lua"))()
     end)
 
-    createButton("Danur Part 2", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
+    createButton("Ramadhan", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
         rootGui.Enabled = false
-         loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/danur2.lua"))()
+         loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/refs/heads/main/danur1.lua"))()
     end)
 end)
 
