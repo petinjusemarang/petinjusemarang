@@ -516,7 +516,7 @@ task.spawn(function()
 end)
 
 -- ==========================================================
--- 🎮 GUI
+-- 🎮 GUI — BIG CENTER MONITOR
 -- ==========================================================
 local oldGui = player.PlayerGui:FindFirstChild("AutoRaceGUI")
 if oldGui then oldGui:Destroy() end
@@ -543,74 +543,140 @@ local function corner(p, r)
 	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r or 8); c.Parent = p
 end
 
-local topBar = Instance.new("Frame")
-topBar.Size = UDim2.new(1, 0, 0, 110); topBar.Position = UDim2.new(0, 0, 0, 0)
-topBar.BackgroundColor3 = Color3.fromRGB(10, 10, 20); topBar.BackgroundTransparency = 0.3
-topBar.BorderSizePixel = 0; topBar.Parent = gui
-local topGrad = Instance.new("UIGradient"); topGrad.Rotation = 90
-topGrad.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1)})
-topGrad.Parent = topBar
+-- ============================
+-- 🟡 CENTER MEGA DISPLAY
+-- ============================
+local centerFrame = Instance.new("Frame")
+centerFrame.Size = UDim2.new(1, 0, 0, 220)
+centerFrame.Position = UDim2.new(0, 0, 0.5, -110)
+centerFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+centerFrame.BackgroundTransparency = 0.1
+centerFrame.BorderSizePixel = 0
+centerFrame.Parent = gui
 
+-- USERNAME GEDE kuning
+local usernameLabel = Instance.new("TextLabel")
+usernameLabel.Size = UDim2.new(1, 0, 0, 35)
+usernameLabel.Position = UDim2.new(0, 0, 0, 5)
+usernameLabel.BackgroundTransparency = 1
+usernameLabel.Text = player.Name
+usernameLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
+usernameLabel.TextSize = 30
+usernameLabel.Font = Enum.Font.GothamBold
+usernameLabel.TextXAlignment = Enum.TextXAlignment.Center
+usernameLabel.TextScaled = true
+usernameLabel.Parent = centerFrame
+
+-- POINTS SUPER GEDE
 local pointsLabel = Instance.new("TextLabel")
-pointsLabel.Size = UDim2.new(1, -20, 0, 40); pointsLabel.Position = UDim2.new(0, 10, 0, 8)
-pointsLabel.BackgroundTransparency = 1; pointsLabel.Text = "0 PTS"
-pointsLabel.TextColor3 = Color3.fromRGB(255, 215, 60); pointsLabel.TextSize = 28
-pointsLabel.Font = Enum.Font.GothamBold; pointsLabel.TextXAlignment = Enum.TextXAlignment.Left; pointsLabel.Parent = topBar
+pointsLabel.Size = UDim2.new(1, -10, 0, 65)
+pointsLabel.Position = UDim2.new(0, 5, 0, 38)
+pointsLabel.BackgroundTransparency = 1
+pointsLabel.Text = "0 PTS"
+pointsLabel.TextColor3 = Color3.fromRGB(255, 215, 60)
+pointsLabel.TextSize = 55
+pointsLabel.Font = Enum.Font.GothamBold
+pointsLabel.TextXAlignment = Enum.TextXAlignment.Center
+pointsLabel.TextScaled = true
+pointsLabel.Parent = centerFrame
 
-local runtimeLabel = Instance.new("TextLabel")
-runtimeLabel.Size = UDim2.new(1, -20, 0, 22); runtimeLabel.Position = UDim2.new(0, 10, 0, 46)
-runtimeLabel.BackgroundTransparency = 1; runtimeLabel.Text = "00:00:00"
-runtimeLabel.TextColor3 = Color3.fromRGB(180, 180, 220); runtimeLabel.TextSize = 18
-runtimeLabel.Font = Enum.Font.GothamBold; runtimeLabel.TextXAlignment = Enum.TextXAlignment.Left; runtimeLabel.Parent = topBar
+-- EARNED SESSION GEDE (hijau)
+local earnedLabel = Instance.new("TextLabel")
+earnedLabel.Size = UDim2.new(1, 0, 0, 40)
+earnedLabel.Position = UDim2.new(0, 0, 0, 103)
+earnedLabel.BackgroundTransparency = 1
+earnedLabel.Text = "+0 earned"
+earnedLabel.TextColor3 = Color3.fromRGB(80, 220, 120)
+earnedLabel.TextSize = 30
+earnedLabel.Font = Enum.Font.GothamBold
+earnedLabel.TextXAlignment = Enum.TextXAlignment.Center
+earnedLabel.TextScaled = true
+earnedLabel.Parent = centerFrame
 
+-- PTS/HR gede di bawah earned
 local ptsHrLabel = Instance.new("TextLabel")
-ptsHrLabel.Size = UDim2.new(0.5, -10, 0, 16); ptsHrLabel.Position = UDim2.new(0, 10, 0, 72)
-ptsHrLabel.BackgroundTransparency = 1; ptsHrLabel.Text = "0 pts/hr"
-ptsHrLabel.TextColor3 = Color3.fromRGB(120, 200, 140); ptsHrLabel.TextSize = 11
-ptsHrLabel.Font = Enum.Font.GothamBold; ptsHrLabel.TextXAlignment = Enum.TextXAlignment.Left; ptsHrLabel.Parent = topBar
+ptsHrLabel.Size = UDim2.new(1, 0, 0, 30)
+ptsHrLabel.Position = UDim2.new(0, 0, 0, 143)
+ptsHrLabel.BackgroundTransparency = 1
+ptsHrLabel.Text = "0 pts/hr"
+ptsHrLabel.TextColor3 = Color3.fromRGB(120, 200, 140)
+ptsHrLabel.TextSize = 24
+ptsHrLabel.Font = Enum.Font.GothamBold
+ptsHrLabel.TextXAlignment = Enum.TextXAlignment.Center
+ptsHrLabel.TextScaled = true
+ptsHrLabel.Parent = centerFrame
 
+-- RUNTIME pojok kiri atas layar
+local runtimeLabel = Instance.new("TextLabel")
+runtimeLabel.Size = UDim2.new(0, 100, 0, 20)
+runtimeLabel.Position = UDim2.new(0, 5, 0, 5)
+runtimeLabel.BackgroundTransparency = 1
+runtimeLabel.Text = "00:00:00"
+runtimeLabel.TextColor3 = Color3.fromRGB(180, 180, 220)
+runtimeLabel.TextSize = 14
+runtimeLabel.Font = Enum.Font.GothamBold
+runtimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+runtimeLabel.Parent = gui
+
+-- Races + status kecil
 local topInfoLabel = Instance.new("TextLabel")
-topInfoLabel.Size = UDim2.new(0.5, -10, 0, 16); topInfoLabel.Position = UDim2.new(0.5, 0, 0, 72)
-topInfoLabel.BackgroundTransparency = 1; topInfoLabel.Text = "Races: 0"
-topInfoLabel.TextColor3 = Color3.fromRGB(140, 140, 180); topInfoLabel.TextSize = 11
-topInfoLabel.Font = Enum.Font.Gotham; topInfoLabel.TextXAlignment = Enum.TextXAlignment.Right; topInfoLabel.Parent = topBar
+topInfoLabel.Size = UDim2.new(0.5, 0, 0, 16)
+topInfoLabel.Position = UDim2.new(0, 5, 0, 178)
+topInfoLabel.BackgroundTransparency = 1
+topInfoLabel.Text = "x0"
+topInfoLabel.TextColor3 = Color3.fromRGB(140, 140, 180)
+topInfoLabel.TextSize = 12
+topInfoLabel.Font = Enum.Font.Gotham
+topInfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+topInfoLabel.Parent = centerFrame
 
 local statusLbl = Instance.new("TextLabel")
-statusLbl.Size = UDim2.new(1, -20, 0, 14); statusLbl.Position = UDim2.new(0, 10, 0, 90)
-statusLbl.BackgroundTransparency = 1; statusLbl.Text = "⏸ Idle"
-statusLbl.TextColor3 = Color3.fromRGB(100, 100, 140); statusLbl.TextSize = 10
-statusLbl.Font = Enum.Font.Gotham; statusLbl.TextXAlignment = Enum.TextXAlignment.Left; statusLbl.Parent = topBar
+statusLbl.Size = UDim2.new(0.5, -5, 0, 16)
+statusLbl.Position = UDim2.new(0.5, 0, 0, 178)
+statusLbl.BackgroundTransparency = 1
+statusLbl.Text = "Idle"
+statusLbl.TextColor3 = Color3.fromRGB(100, 100, 140)
+statusLbl.TextSize = 12
+statusLbl.Font = Enum.Font.Gotham
+statusLbl.TextXAlignment = Enum.TextXAlignment.Right
+statusLbl.Parent = centerFrame
 
+-- ============================
+-- 🎮 BOTTOM BAR
+-- ============================
 local botBar = Instance.new("Frame")
-botBar.Size = UDim2.new(1, 0, 0, 100); botBar.Position = UDim2.new(0, 0, 1, -100)
-botBar.BackgroundColor3 = Color3.fromRGB(10, 10, 20); botBar.BackgroundTransparency = 0.3
-botBar.BorderSizePixel = 0; botBar.Parent = gui
+botBar.Size = UDim2.new(1, 0, 0, 70)
+botBar.Position = UDim2.new(0, 0, 1, -70)
+botBar.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
+botBar.BackgroundTransparency = 0.3
+botBar.BorderSizePixel = 0
+botBar.Parent = gui
 local botGrad = Instance.new("UIGradient"); botGrad.Rotation = 270
 botGrad.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1)})
 botGrad.Parent = botBar
 
 local startBtn = Instance.new("TextButton")
-startBtn.Size = UDim2.new(1, -20, 0, 34); startBtn.Position = UDim2.new(0, 10, 0, 8)
-startBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 70); startBtn.Text = "▶  START"
-startBtn.TextColor3 = Color3.fromRGB(255, 255, 255); startBtn.TextSize = 13
-startBtn.Font = Enum.Font.GothamBold; startBtn.AutoButtonColor = true; startBtn.Parent = botBar; corner(startBtn, 10)
+startBtn.Size = UDim2.new(1, -20, 0, 26); startBtn.Position = UDim2.new(0, 10, 0, 4)
+startBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 70); startBtn.Text = "START"
+startBtn.TextColor3 = Color3.fromRGB(255, 255, 255); startBtn.TextSize = 12
+startBtn.Font = Enum.Font.GothamBold; startBtn.AutoButtonColor = true; startBtn.Parent = botBar; corner(startBtn, 8)
 
 local winBtn = Instance.new("TextButton")
-winBtn.Size = UDim2.new(0.5, -15, 0, 30); winBtn.Position = UDim2.new(0, 10, 0, 50)
-winBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 65); winBtn.Text = "🏆 WIN"
-winBtn.TextColor3 = Color3.fromRGB(255, 255, 255); winBtn.TextSize = 11
-winBtn.Font = Enum.Font.GothamBold; winBtn.AutoButtonColor = true; winBtn.Parent = botBar; corner(winBtn, 8)
+winBtn.Size = UDim2.new(0.5, -15, 0, 22); winBtn.Position = UDim2.new(0, 10, 0, 34)
+winBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 65); winBtn.Text = "WIN"
+winBtn.TextColor3 = Color3.fromRGB(255, 255, 255); winBtn.TextSize = 10
+winBtn.Font = Enum.Font.GothamBold; winBtn.AutoButtonColor = true; winBtn.Parent = botBar; corner(winBtn, 6)
 
 local loseBtn = Instance.new("TextButton")
-loseBtn.Size = UDim2.new(0.5, -15, 0, 30); loseBtn.Position = UDim2.new(0.5, 5, 0, 50)
-loseBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 65); loseBtn.Text = "🐢 LOSE"
-loseBtn.TextColor3 = Color3.fromRGB(255, 255, 255); loseBtn.TextSize = 11
-loseBtn.Font = Enum.Font.GothamBold; loseBtn.AutoButtonColor = true; loseBtn.Parent = botBar; corner(loseBtn, 8)
+loseBtn.Size = UDim2.new(0.5, -15, 0, 22); loseBtn.Position = UDim2.new(0.5, 5, 0, 34)
+loseBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 65); loseBtn.Text = "LOSE"
+loseBtn.TextColor3 = Color3.fromRGB(255, 255, 255); loseBtn.TextSize = 10
+loseBtn.Font = Enum.Font.GothamBold; loseBtn.AutoButtonColor = true; loseBtn.Parent = botBar; corner(loseBtn, 6)
 
 local infoLbl = Instance.new("TextLabel")
-infoLbl.Size = UDim2.new(1, -20, 0, 12); infoLbl.Position = UDim2.new(0, 10, 0, 84)
+infoLbl.Size = UDim2.new(1, -20, 0, 10); infoLbl.Position = UDim2.new(0, 10, 0, 58)
 infoLbl.BackgroundTransparency = 1; infoLbl.TextColor3 = Color3.fromRGB(55, 55, 80)
-infoLbl.TextSize = 8; infoLbl.Font = Enum.Font.Gotham
+infoLbl.TextSize = 7; infoLbl.Font = Enum.Font.Gotham
 infoLbl.TextXAlignment = Enum.TextXAlignment.Center; infoLbl.Text = ""; infoLbl.Parent = botBar
 
 task.delay(3, function()
@@ -627,26 +693,27 @@ local function refreshGUI()
 	local ptsHr = 0
 	if hours > 0.02 then ptsHr = math.floor(earned / hours) end
 	ptsHrLabel.Text = string.format("%d pts/hr", ptsHr)
+	earnedLabel.Text = string.format("+%d earned", earned)
 	local h = math.floor(elapsed / 3600)
 	local m = math.floor((elapsed % 3600) / 60)
 	local s = math.floor(elapsed % 60)
 	runtimeLabel.Text = string.format("%02d:%02d:%02d", h, m, s)
-	topInfoLabel.Text = string.format("Races: %d", RACE_COUNT)
+	topInfoLabel.Text = string.format("x%d races", RACE_COUNT)
 	if RUNNING then
-		statusLbl.Text = "🟢 " .. STATUS_TEXT
+		statusLbl.Text = STATUS_TEXT
 		statusLbl.TextColor3 = Color3.fromRGB(90, 200, 120)
-		startBtn.Text = "⏹  STOP"; startBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
+		startBtn.Text = "STOP"; startBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
 	else
-		statusLbl.Text = "⏸ Stopped"
+		statusLbl.Text = "Stopped"
 		statusLbl.TextColor3 = Color3.fromRGB(100, 100, 140)
-		startBtn.Text = "▶  START"; startBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 70)
+		startBtn.Text = "START"; startBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 70)
 	end
 	if MODE == "WIN" then
-		winBtn.BackgroundColor3 = Color3.fromRGB(170, 125, 15); winBtn.Text = "🏆 WIN ◀"
-		loseBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 55); loseBtn.Text = "🐢 LOSE"
+		winBtn.BackgroundColor3 = Color3.fromRGB(170, 125, 15); winBtn.Text = "WIN <"
+		loseBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 55); loseBtn.Text = "LOSE"
 	else
-		winBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 55); winBtn.Text = "🏆 WIN"
-		loseBtn.BackgroundColor3 = Color3.fromRGB(40, 100, 140); loseBtn.Text = "🐢 LOSE ◀"
+		winBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 55); winBtn.Text = "WIN"
+		loseBtn.BackgroundColor3 = Color3.fromRGB(40, 100, 140); loseBtn.Text = "LOSE <"
 	end
 	infoLbl.Text = string.format("v8.3 | %s | BV %d/%d", MODE == "WIN" and "HOST" or "JOIN", SPEED.WIN, SPEED.LOSE)
 end
