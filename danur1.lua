@@ -161,13 +161,13 @@ local function buildPlatforms()
 			createRoad(from, to)
 		end
 	end
-	-- Road dari spawn ke CP1
-	createRoad(Vector3.new(126, 3, 427), CHECKPOINTS[1])
-	-- Platform spawn area
-	createPlatform(Vector3.new(11.09, -3.13, 427.56), Vector3.new(200, 3, 200))
-	-- Platform NPC area
+	-- Road dari NPC area ke CP1
 	local npcRoot = NPC_PATH:FindFirstChild("HumanoidRootPart")
-	if npcRoot then createPlatform(npcRoot.Position - Vector3.new(0, 3, 0), Vector3.new(100, 3, 100)) end
+	if npcRoot then
+		createRoad(npcRoot.Position, CHECKPOINTS[1])
+		-- Platform NPC area
+		createPlatform(npcRoot.Position - Vector3.new(0, 3, 0), Vector3.new(100, 3, 100))
+	end
 	-- Platform finish
 	createPlatform(CHECKPOINTS[#CHECKPOINTS])
 end
@@ -461,33 +461,9 @@ task.spawn(function()
 		while RUNNING and not isRaceHUDVisible() do task.wait(0.5) end
 		if not RUNNING then continue end
 
-		STATUS_TEXT = "Race started! Remount..."
-
-		-- Keluar mobil dulu (fix bug awal stuck)
-		pcall(function()
-			local hum = char:FindFirstChildOfClass("Humanoid")
-			if hum then hum.Sit = false end
-		end)
-		task.wait(1)
-
-		-- Masuk lagi via Drive prompt
-		local drivePrompt = nil
-		for _, v in pairs(Workspace:GetDescendants()) do
-			if v:IsA("ProximityPrompt") and v.ActionText == "Drive" then
-				local part = v.Parent
-				if part and part:IsA("BasePart") then
-					local d = (part.Position - root.Position).Magnitude
-					if d < 15 then
-						drivePrompt = v
-						break
-					end
-				end
-			end
-		end
-		if drivePrompt then
-			fireproximityprompt(drivePrompt)
-		end
-		task.wait(1)
+		-- Tunggu countdown 3-2-1 selesai (3 detik)
+		STATUS_TEXT = "Countdown..."
+		task.wait(3)
 
 		runRace()
 
