@@ -233,6 +233,7 @@ local function runRace()
 	local currentCP = 1
 	local lastPos = vRoot.Position
 	local stuckTime = 0
+	local raceStartTime = tick() -- grace period
 
 	local connection
 	connection = RunService.Heartbeat:Connect(function()
@@ -254,19 +255,35 @@ local function runRace()
 		bodyVel.Velocity = direction.Unit * speed
 		bodyGyro.CFrame = CFrame.lookAt(vRoot.Position, target)
 
-		-- Anti stuck (cepet react — 20 frame = ~0.3 detik)
-		if (vRoot.Position - lastPos).Magnitude < 1 then
-			stuckTime += 1
-		else
-			stuckTime = 0
-		end
-		lastPos = vRoot.Position
+		-- Anti stuck (SKIP 5 detik pertama — grace period)
+		if tick() - raceStartTime > 5 then
+			if (vRoot.Position - lastPos).Magnitude < 1 then
+				stuckTime += 1
+			else
+				stuckTime = 0
+			end
+			lastPos = vRoot.Position
 
-		if stuckTime > 20 then
-			-- Teleport ke atas + 30 stud ke arah target
-			local pushDir = direction.Unit * 30
-			vRoot.CFrame = CFrame.new(vRoot.Position + Vector3.new(pushDir.X, 15, pushDir.Z))
-			stuckTime = 0
+			if stuckTime > 30 then
+				stuckTime = 0
+				-- Pause movement
+				bodyVel.Velocity = Vector3.zero
+				-- Teleport ke atas 20 + maju 50 ke arah target
+				local fwd = direction.Unit * 50
+				vRoot.CFrame = CFrame.new(vRoot.Position.X + fwd.X, vRoot.Position.Y + 20, vRoot.Position.Z + fwd.Z)
+				vRoot.Anchored = true
+				-- Drop pelan 20 stud
+				task.defer(function()
+					for d = 1, 20 do
+						if not vRoot or not vRoot.Parent then break end
+						vRoot.CFrame = vRoot.CFrame - Vector3.new(0, 1, 0)
+						task.wait(0.03)
+					end
+					if vRoot and vRoot.Parent then
+						vRoot.Anchored = false
+					end
+				end)
+			end
 		end
 
 		-- Sampai CP → langsung next, GAK berhenti
