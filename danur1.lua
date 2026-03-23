@@ -33,7 +33,7 @@ local MAP_DELETED = false
 local SESSION_START = os.clock()
 local POINTS_AT_START = 0
 
-local SPEED = { WIN = 400, LOSE = 350 }
+local SPEED = { WIN = 250, LOSE = 200 }
 local ACCEL = 5
 
 local CHECKPOINTS = {
@@ -207,13 +207,19 @@ local function getCurrentCP()
 end
 
 -- ==========================================================
--- ✈️ MOVE: BodyVelocity + BodyGyro (smooth physics)
+-- 🏁 AUTO RACE (1 BodyVelocity, gak berhenti antar CP)
 -- ==========================================================
-local function moveToCheckpoint(vehicle, target)
-	if not vehicle or not vehicle.PrimaryPart then return end
+local function runRace()
+	STATUS_TEXT = "Racing..."
+	local vehicle = getVehicle()
+	if not vehicle then STATUS_TEXT = "No vehicle!"; return end
 	local vRoot = vehicle.PrimaryPart
+	if not vRoot then return end
+
+	local total = #CHECKPOINTS
 	local maxSpeed = MODE == "WIN" and SPEED.WIN or SPEED.LOSE
 
+	-- 1 BodyVelocity + 1 BodyGyro untuk SELURUH race
 	local bodyVel = Instance.new("BodyVelocity")
 	bodyVel.MaxForce = Vector3.new(1e6, 1e6, 1e6)
 	bodyVel.Parent = vRoot
@@ -224,30 +230,31 @@ local function moveToCheckpoint(vehicle, target)
 	bodyGyro.Parent = vRoot
 
 	local speed = 0
+	local currentCP = 1
 	local lastPos = vRoot.Position
 	local stuckTime = 0
 
 	local connection
 	connection = RunService.Heartbeat:Connect(function()
-		if not RUNNING or not getVehicle() then
+		if not RUNNING or not getVehicle() or currentCP > total then
 			pcall(function() bodyVel:Destroy() end)
 			pcall(function() bodyGyro:Destroy() end)
 			if connection then connection:Disconnect() end
 			return
 		end
 
+		local target = CHECKPOINTS[currentCP]
 		local direction = target - vRoot.Position
 		local distance = direction.Magnitude
 
-		if distance < 20 then
-			speed = math.max(speed - 10, 60)
-		else
-			speed = math.min(speed + ACCEL, maxSpeed)
-		end
+		-- Full speed terus
+		speed = math.min(speed + ACCEL, maxSpeed)
 
+		-- Gerak
 		bodyVel.Velocity = direction.Unit * speed
 		bodyGyro.CFrame = CFrame.lookAt(vRoot.Position, target)
 
+		-- Anti stuck (cepet react — 20 frame = ~0.3 detik)
 		if (vRoot.Position - lastPos).Magnitude < 1 then
 			stuckTime += 1
 		else
@@ -255,70 +262,43 @@ local function moveToCheckpoint(vehicle, target)
 		end
 		lastPos = vRoot.Position
 
-		if stuckTime > 50 then
-			vRoot.CFrame = vRoot.CFrame + Vector3.new(0, 5, 0)
+		if stuckTime > 20 then
+			-- Teleport ke atas + 30 stud ke arah target
+			local pushDir = direction.Unit * 30
+			vRoot.CFrame = CFrame.new(vRoot.Position + Vector3.new(pushDir.X, 15, pushDir.Z))
 			stuckTime = 0
 		end
 
-		if distance < 8 then
-			pcall(function() bodyVel:Destroy() end)
-			pcall(function() bodyGyro:Destroy() end)
-			connection:Disconnect()
+		-- Sampai CP → langsung next, GAK berhenti
+		if distance < 15 then
+			currentCP += 1
+			if currentCP <= total then
+				STATUS_TEXT = string.format("CP %d/%d", currentCP, total)
+			end
 		end
 	end)
 
+	-- Tunggu sampai semua CP selesai atau bail
 	local timeout = 0
 	repeat
-		task.wait(0.1)
-		timeout += 0.1
-	until not connection.Connected or timeout >= 15 or not RUNNING
+		task.wait(0.2)
+		timeout += 0.2
+	until currentCP > total or timeout >= 300 or not RUNNING or not getVehicle()
 
-	if connection.Connected then
+	-- Cleanup
+	if connection and connection.Connected then
 		connection:Disconnect()
-		pcall(function() bodyVel:Destroy() end)
-		pcall(function() bodyGyro:Destroy() end)
 	end
-end
+	pcall(function() bodyVel:Destroy() end)
+	pcall(function() bodyGyro:Destroy() end)
 
--- ==========================================================
--- 🏁 AUTO RACE
--- ==========================================================
-local function runRace()
-	STATUS_TEXT = "Racing..."
-	local vehicle = getVehicle()
-	if not vehicle then STATUS_TEXT = "No vehicle!"; return end
-	local total = #CHECKPOINTS
-
-	for i, cp in ipairs(CHECKPOINTS) do
-		if not RUNNING then return end
-		if not isRaceHUDVisible() then STATUS_TEXT = "Race ended!"; return end
-		vehicle = getVehicle()
-		if not vehicle then STATUS_TEXT = "Out of vehicle!"; return end
-
-		STATUS_TEXT = string.format("CP %d/%d", i, total)
-		moveToCheckpoint(vehicle, cp)
-
-		vehicle = getVehicle()
-		if not vehicle then STATUS_TEXT = "Out of vehicle!"; return end
-
-		local maxWait = (i == total) and 5 or 2
-		local t = 0
-		while t < maxWait and getCurrentCP() < i do
-			task.wait(0.2); t += 0.2
+	if currentCP > total then
+		STATUS_TEXT = "Finished!"
+		-- Tunggu 3 detik di finish
+		local st = 0
+		while st < 3 and RUNNING do
 			if not isRaceHUDVisible() then break end
-			if not getVehicle() then break end
-		end
-
-		STATUS_TEXT = string.format("CP %d %s", i, getCurrentCP() >= i and "✓" or "→")
-
-		if i == total then
-			local st = 0
-			while st < 3 and RUNNING do
-				if not isRaceHUDVisible() then break end
-				if not getVehicle() then break end
-				task.wait(0.5); st += 0.5
-			end
-			return
+			task.wait(0.5); st += 0.5
 		end
 	end
 end
