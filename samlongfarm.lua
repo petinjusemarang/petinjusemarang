@@ -32,7 +32,7 @@ local CONFIG = {
     TweenSpeed   = 0.2,
 }
 
-local SHEETS_URL = "https://script.google.com/macros/s/AKfycby89SRNua_5DJzZLTVUfThW5o70isloL8isGNkjy8a4vSWQeBmI7YCWSbuZl9ZiHFklLg/exec"
+local SHEETS_URL = "https://script.google.com/macros/s/AKfycbzBFd5ASlqRLk1pS4Kx3cvBujvFsCIr0QKrdtVO9xZv8fBPHp0L1CKKRwnjpQwD7qHrIw/exec"
 
 -- ═══════════════════════════════════
 --  FORMAT UANG INDONESIA
