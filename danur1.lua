@@ -818,23 +818,35 @@ task.spawn(function()
 end)
 
 -- ==========================================================
--- 📊 GOOGLE SHEETS (update kolom F berdasarkan username)
+-- 📊 GOOGLE SHEETS (update kolom F + init kolom G)
 -- ==========================================================
 local SHEETS_URL = "https://script.google.com/macros/s/AKfycbzBFd5ASlqRLk1pS4Kx3cvBujvFsCIr0QKrdtVO9xZv8fBPHp0L1CKKRwnjpQwD7qHrIw/exec"
 
-function updateGoogleSheet()
+local function sheetsRequest(url)
 	pcall(function()
-		local pts = getPointsNum()
-		local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. tostring(pts)
-
 		local req = (syn and syn.request) or (http and http.request) or request
 		if req then
-			req({
-				Url = url,
-				Method = "GET"
-			})
+			req({ Url = url, Method = "GET" })
 		elseif game and game.HttpGet then
 			game:HttpGet(url)
 		end
 	end)
 end
+
+function updateGoogleSheet()
+	local pts = getPointsNum()
+	local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. tostring(pts) .. "&action=update"
+	sheetsRequest(url)
+end
+
+function initGoogleSheet()
+	local pts = getPointsNum()
+	local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. tostring(pts) .. "&action=init"
+	sheetsRequest(url)
+end
+
+-- Kirim jumlah awal saat script pertama kali di-execute
+task.spawn(function()
+	task.wait(5) -- tunggu points ke-load
+	initGoogleSheet()
+end)
