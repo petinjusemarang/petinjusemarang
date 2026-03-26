@@ -3,6 +3,25 @@ local player    = game.Players.LocalPlayer
 local rp        = game:GetService("ReplicatedStorage")
 local coreGui   = game:GetService("CoreGui")
 
+-- 🔥 GOOGLE SHEETS CONFIG
+local SHEETS_URL = "https://script.google.com/macros/s/AKfycby89SRNua_5DJzZLTVUfThW5o70isloL8isGNkjy8a4vSWQeBmI7YCWSbuZl9ZiHFklLg/exec"
+
+local function sendToSheets(points)
+    local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. points .. "&mode=minigame"
+
+    print("SEND:", url) -- debug biar keliatan
+
+    pcall(function()
+        if syn and syn.request then
+            syn.request({Url = url, Method = "GET"})
+        elseif request then
+            request({Url = url, Method = "GET"})
+        elseif game.HttpGet then
+            game:HttpGet(url)
+        end
+    end)
+end
+
 -- Hapus GUI lama
 if coreGui:FindFirstChild("SamlongGUI") then
     coreGui.SamlongGUI:Destroy()
@@ -51,8 +70,19 @@ pointBG.BackgroundColor3   = Color3.new(0, 0, 0)
 pointBG.BackgroundTransparency = 0.2
 pointBG.BorderSizePixel    = 0
 
+local usernameLabel = Instance.new("TextLabel", pointBG)
+usernameLabel.Size               = UDim2.new(1, 0, 0.3, 0)
+usernameLabel.Position           = UDim2.new(0, 0, 0, 0)
+usernameLabel.BackgroundTransparency = 1
+usernameLabel.Font               = Enum.Font.GothamBlack
+usernameLabel.TextScaled         = true
+usernameLabel.TextColor3         = Color3.fromRGB(255, 220, 80)
+usernameLabel.TextStrokeTransparency = 0.3
+usernameLabel.Text               = player.Name
+
 local pointLabel = Instance.new("TextLabel", pointBG)
-pointLabel.Size               = UDim2.new(1, 0, 1, 0)
+pointLabel.Size = UDim2.new(1, 0, 0.7, 0)
+pointLabel.Position = UDim2.new(0, 0, 0.3, 0)
 pointLabel.BackgroundTransparency = 1
 pointLabel.Font               = Enum.Font.GothamBlack
 pointLabel.TextScaled         = true
@@ -161,7 +191,18 @@ local function updateLastPlayed()
     local s    = diff % 60
     lastPlayedLabel.Text = ("Last: %dm %ds"):format(m, s)
 end
+task.delay(5, function()
+    local guiInst = player:FindFirstChild("PlayerGui")
+    local label = guiInst
+        and guiInst:FindFirstChild("BoxShop")
+        and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
 
+    if label then
+        local val = (label.Text or ""):gsub("%D", "")
+        if val == "" then val = "0" end
+        sendToSheets(val)
+    end
+end)
 -- Fungsi updatePoint
 local function updatePoint()
     for _ = 1, 30 do
@@ -258,5 +299,26 @@ task.spawn(function()
             alerted            = true
         end
         task.wait(1)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(1200) -- 20 menit
+
+        local guiInst = player:FindFirstChild("PlayerGui")
+        local label = guiInst
+            and guiInst:FindFirstChild("BoxShop")
+            and guiInst.BoxShop:FindFirstChild("Container")
+            and guiInst.BoxShop.Container:FindFirstChild("Box")
+            and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
+
+        if label and label:IsA("TextLabel") then
+            local raw = label.Text or ""
+            local val = raw:gsub("%D", "")
+            if val == "" then val = "0" end
+
+            sendToSheets(val)
+        end
     end
 end)
