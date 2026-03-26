@@ -645,8 +645,8 @@ statusLbl.Parent = centerFrame
 -- 🎮 BOTTOM BAR
 -- ============================
 local botBar = Instance.new("Frame")
-botBar.Size = UDim2.new(1, 0, 0, 70)
-botBar.Position = UDim2.new(0, 0, 1, -70)
+botBar.Size = UDim2.new(1, 0, 0, 75)
+botBar.Position = UDim2.new(0, 0, 1, -75)
 botBar.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
 botBar.BackgroundTransparency = 0.3
 botBar.BorderSizePixel = 0
@@ -655,26 +655,28 @@ local botGrad = Instance.new("UIGradient"); botGrad.Rotation = 270
 botGrad.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1)})
 botGrad.Parent = botBar
 
+-- RANK BUTTONS dihapus — tidak diperlukan
+
 local startBtn = Instance.new("TextButton")
-startBtn.Size = UDim2.new(1, -20, 0, 26); startBtn.Position = UDim2.new(0, 10, 0, 4)
+startBtn.Size = UDim2.new(1, -20, 0, 26); startBtn.Position = UDim2.new(0, 10, 0, 5)
 startBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 70); startBtn.Text = "START"
 startBtn.TextColor3 = Color3.fromRGB(255, 255, 255); startBtn.TextSize = 12
 startBtn.Font = Enum.Font.GothamBold; startBtn.AutoButtonColor = true; startBtn.Parent = botBar; corner(startBtn, 8)
 
 local winBtn = Instance.new("TextButton")
-winBtn.Size = UDim2.new(0.5, -15, 0, 22); winBtn.Position = UDim2.new(0, 10, 0, 34)
+winBtn.Size = UDim2.new(0.5, -15, 0, 22); winBtn.Position = UDim2.new(0, 10, 0, 36)
 winBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 65); winBtn.Text = "WIN"
 winBtn.TextColor3 = Color3.fromRGB(255, 255, 255); winBtn.TextSize = 10
 winBtn.Font = Enum.Font.GothamBold; winBtn.AutoButtonColor = true; winBtn.Parent = botBar; corner(winBtn, 6)
 
 local loseBtn = Instance.new("TextButton")
-loseBtn.Size = UDim2.new(0.5, -15, 0, 22); loseBtn.Position = UDim2.new(0.5, 5, 0, 34)
+loseBtn.Size = UDim2.new(0.5, -15, 0, 22); loseBtn.Position = UDim2.new(0.5, 5, 0, 36)
 loseBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 65); loseBtn.Text = "LOSE"
 loseBtn.TextColor3 = Color3.fromRGB(255, 255, 255); loseBtn.TextSize = 10
 loseBtn.Font = Enum.Font.GothamBold; loseBtn.AutoButtonColor = true; loseBtn.Parent = botBar; corner(loseBtn, 6)
 
 local infoLbl = Instance.new("TextLabel")
-infoLbl.Size = UDim2.new(1, -20, 0, 10); infoLbl.Position = UDim2.new(0, 10, 0, 58)
+infoLbl.Size = UDim2.new(1, -20, 0, 10); infoLbl.Position = UDim2.new(0, 10, 0, 62)
 infoLbl.BackgroundTransparency = 1; infoLbl.TextColor3 = Color3.fromRGB(55, 55, 80)
 infoLbl.TextSize = 7; infoLbl.Font = Enum.Font.Gotham
 infoLbl.TextXAlignment = Enum.TextXAlignment.Center; infoLbl.Text = ""; infoLbl.Parent = botBar
@@ -728,3 +730,111 @@ end)
 winBtn.MouseButton1Click:Connect(function() MODE = "WIN"; refreshGUI() end)
 loseBtn.MouseButton1Click:Connect(function() MODE = "LOSE"; refreshGUI() end)
 task.spawn(function() while true do task.wait(1); refreshGUI() end end)
+
+-- ==========================================================
+-- 📡 DISCORD WEBHOOK (5 URL, random pick, tiap 30 menit)
+-- ==========================================================
+local WEBHOOK_URLS = {
+	"https://discord.com/api/webhooks/1486677758838050886/-4KZKc9XPfhenUsbx5JAmxPHLxpXguU1whbMJYkRyzyfayFWUqnmxV7DRh8dvgFJOxCd",
+	"https://discord.com/api/webhooks/1486689239914774600/NNXdfR1GF9CaxVAM4vbrbsAV3pXizxQSHs_PqM0CArPezApql7zEKZQR0rEMUfAl3gh8",
+	"https://discord.com/api/webhooks/1486689242179436624/tqSUuI6ww3ok98-qv1NnM5S7UWmD6W_Rq44s034KIZx9Zazh44F-1Nn8GK1Vw5A0dLfN",
+	"https://discord.com/api/webhooks/1486689243630796874/8O63v71D3mX8mAzfXaXtal5HxN20CIPHfPzxx_I3KztmefI5xzWR4ro0yasJZbF-1rG7",
+	"https://discord.com/api/webhooks/1486689252732436590/xjCM3rmF-Y6H9CRKRO8nUnnGnrUPGIozO-jlWNbmD4iNs5Hm1AVKIO5KJau_rfyDSO94",
+}
+local HttpService = game:GetService("HttpService")
+
+local function sendWebhook()
+	local elapsed = os.clock() - SESSION_START
+	local h = math.floor(elapsed / 3600)
+	local m = math.floor((elapsed % 3600) / 60)
+	local s = math.floor(elapsed % 60)
+	local runtime = string.format("%02d:%02d:%02d", h, m, s)
+
+	local currentPts = getPointsNum()
+	local earned = currentPts - POINTS_AT_START
+	if earned < 0 then earned = 0 end
+	local hours = elapsed / 3600
+	local ptsHr = 0
+	if hours > 0.02 then ptsHr = math.floor(earned / hours) end
+
+	local modeText = MODE == "WIN" and "WIN" or "LOSE"
+
+	local data = {
+		embeds = {{
+			title = "\xF0\x9F\x8F\x81 " .. player.Name,
+			color = 16769280,
+			fields = {
+				{ name = "Total Points", value = getPointsText(), inline = true },
+				{ name = "Earned Session", value = "+" .. tostring(earned), inline = true },
+				{ name = "PTS/Hour", value = tostring(ptsHr), inline = true },
+				{ name = "Races", value = tostring(RACE_COUNT), inline = true },
+				{ name = "Mode", value = modeText, inline = true },
+				{ name = "Runtime", value = runtime, inline = true },
+			},
+			footer = { text = "Auto Race v8.3 | " .. os.date("%Y-%m-%d %H:%M:%S") },
+		}}
+	}
+
+	local json = HttpService:JSONEncode(data)
+
+	-- Random pilih 1 dari 5 webhook
+	local url = WEBHOOK_URLS[math.random(1, #WEBHOOK_URLS)]
+
+	pcall(function()
+		local req = (syn and syn.request) or (http and http.request) or request
+		if req then
+			req({
+				Url = url,
+				Method = "POST",
+				Headers = { ["Content-Type"] = "application/json" },
+				Body = json
+			})
+		end
+	end)
+end
+
+-- Discord: saat start + tiap 30 menit
+task.spawn(function()
+	while not RUNNING do task.wait(5) end
+	task.wait(10)
+	sendWebhook()
+
+	while true do
+		task.wait(1800) -- 30 menit
+		if RUNNING then sendWebhook() end
+	end
+end)
+
+-- Google Sheets: saat start + tiap 10 menit
+task.spawn(function()
+	while not RUNNING do task.wait(5) end
+	task.wait(10)
+	updateGoogleSheet()
+
+	while true do
+		task.wait(600) -- 10 menit
+		if RUNNING then updateGoogleSheet() end
+	end
+end)
+
+-- ==========================================================
+-- 📊 GOOGLE SHEETS (update kolom F berdasarkan username)
+-- ==========================================================
+local SHEETS_URL = "https://script.google.com/macros/s/AKfycby89SRNua_5DJzZLTVUfThW5o70isloL8isGNkjy8a4vSWQeBmI7YCWSbuZl9ZiHFklLg/exec"
+
+function updateGoogleSheet()
+	pcall(function()
+		local pts = getPointsNum()
+		local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. tostring(pts)
+
+		local req = (syn and syn.request) or (http and http.request) or request
+		if req then
+			req({
+				Url = url,
+				Method = "GET"
+			})
+		elseif game and game.HttpGet then
+			game:HttpGet(url)
+		end
+	end)
+end
