@@ -1,14 +1,14 @@
--- GUI Samlong CDID v2 — Modern Upgrade
--- Perubahan: visual upgrade, tween animations, better hover, fix callback execution
--- Fitur tetap sama persis dengan versi lama
+-- GUI Samlong CDID v3 — Modern + Auto Sheets + Serverlock
+-- Fitur baru: username display, format uang Indonesia, Google Sheets tiap 15 menit, auto serverlock
 
 local Players           = game:GetService("Players")
 local UserInputService  = game:GetService("UserInputService")
 local TweenService      = game:GetService("TweenService")
+local HttpService       = game:GetService("HttpService")
 local player            = Players.LocalPlayer
 
 -- ═══════════════════════════════════
---  CONFIG (gampang di-custom)
+--  CONFIG
 -- ═══════════════════════════════════
 local CONFIG = {
     BgPrimary    = Color3.fromRGB(18, 18, 24),
@@ -31,6 +31,87 @@ local CONFIG = {
     Success      = Color3.fromRGB(50, 200, 120),
     TweenSpeed   = 0.2,
 }
+
+local SHEETS_URL = "https://script.google.com/macros/s/AKfycby89SRNua_5DJzZLTVUfThW5o70isloL8isGNkjy8a4vSWQeBmI7YCWSbuZl9ZiHFklLg/exec"
+
+-- ═══════════════════════════════════
+--  FORMAT UANG INDONESIA
+-- ═══════════════════════════════════
+local function formatUang(raw)
+    local num = tonumber((raw:gsub("[^%d]", ""))) or 0
+    if num >= 1000000000000 then
+        local val = num / 1000000000000
+        local dec = math.floor(val * 10) / 10
+        if dec == math.floor(dec) then
+            return string.format("%dT", math.floor(dec))
+        else
+            return string.format("%.1fT", dec):gsub("%.", ",")
+        end
+    elseif num >= 1000000000 then
+        local val = num / 1000000000
+        local dec = math.floor(val * 10) / 10
+        if dec == math.floor(dec) then
+            return string.format("%dM", math.floor(dec))
+        else
+            return string.format("%.1fM", dec):gsub("%.", ",")
+        end
+    elseif num >= 1000000 then
+        local val = num / 1000000
+        local dec = math.floor(val * 10) / 10
+        if dec == math.floor(dec) then
+            return string.format("%djt", math.floor(dec))
+        else
+            return string.format("%.1fjt", dec):gsub("%.", ",")
+        end
+    elseif num >= 1000 then
+        local val = num / 1000
+        local dec = math.floor(val * 10) / 10
+        if dec == math.floor(dec) then
+            return string.format("%dK", math.floor(dec))
+        else
+            return string.format("%.1fK", dec):gsub("%.", ",")
+        end
+    else
+        return tostring(num)
+    end
+end
+
+-- ═══════════════════════════════════
+--  GOOGLE SHEETS HELPER
+-- ═══════════════════════════════════
+local function sheetsRequest(url)
+    pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or request
+        if req then
+            req({ Url = url, Method = "GET" })
+        elseif game and game.HttpGet then
+            game:HttpGet(url)
+        end
+    end)
+end
+
+local function updateSheet(formattedMoney)
+    local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. formattedMoney .. "&action=update"
+    sheetsRequest(url)
+end
+
+local function initSheet(formattedMoney)
+    local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. formattedMoney .. "&action=init"
+    sheetsRequest(url)
+end
+
+-- ═══════════════════════════════════
+--  SERVERLOCK
+-- ═══════════════════════════════════
+local function serverLock()
+    pcall(function()
+        local remote = game:GetService("ReplicatedStorage")
+            :WaitForChild("NetworkContainer")
+            :WaitForChild("RemoteEvents")
+            :WaitForChild("Private Server")
+        remote:FireServer("serverlock", {})
+    end)
+end
 
 -- ═══════════════════════════════════
 --  UTILITY FUNCTIONS
@@ -64,6 +145,9 @@ screenGui.ResetOnSpawn       = false
 screenGui.Parent             = player:WaitForChild("PlayerGui")
 
 local rootGui = screenGui
+
+-- 🔒 AUTO SERVERLOCK saat GUI muncul
+serverLock()
 
 -- ═══════════════════════════════════
 --  MAIN FRAME
@@ -130,21 +214,18 @@ titleBar.BackgroundColor3   = CONFIG.BgHeader
 titleBar.BorderSizePixel    = 0
 addCorner(titleBar, 14)
 
--- Fill bawah title bar biar ga ada gap
 local titleFill = Instance.new("Frame", titleBar)
 titleFill.Size               = UDim2.new(1, 0, 0, 14)
 titleFill.Position           = UDim2.new(0, 0, 1, -14)
 titleFill.BackgroundColor3   = CONFIG.BgHeader
 titleFill.BorderSizePixel    = 0
 
--- Separator
 local sep = Instance.new("Frame", mainFrame)
 sep.Size               = UDim2.new(1, -20, 0, 1)
 sep.Position           = UDim2.new(0, 10, 0, 42)
 sep.BackgroundColor3   = CONFIG.Separator
 sep.BorderSizePixel    = 0
 
--- Accent dot
 local dot = Instance.new("Frame", titleBar)
 dot.Size               = UDim2.new(0, 8, 0, 8)
 dot.Position           = UDim2.new(0, 14, 0.5, -4)
@@ -152,7 +233,6 @@ dot.BackgroundColor3   = CONFIG.BgButton
 dot.BorderSizePixel    = 0
 addCorner(dot, 4)
 
--- Title text
 local titleLabel = Instance.new("TextLabel", titleBar)
 titleLabel.Size               = UDim2.new(1, -90, 1, 0)
 titleLabel.Position           = UDim2.new(0, 30, 0, 0)
@@ -163,7 +243,6 @@ titleLabel.TextColor3         = CONFIG.TextPrimary
 titleLabel.TextSize           = 17
 titleLabel.TextXAlignment     = Enum.TextXAlignment.Left
 
--- Close Button (X)
 local closeButton = Instance.new("TextButton", titleBar)
 closeButton.Name               = "CloseBtn"
 closeButton.Size               = UDim2.new(0, 28, 0, 28)
@@ -237,7 +316,6 @@ local function createButton(text, color, hoverColor, callback)
     btn.BorderSizePixel    = 0
     addCorner(btn, 10)
 
-    -- Hover
     btn.MouseEnter:Connect(function()
         tween(btn, {BackgroundColor3 = bgHover, Size = UDim2.new(0, 284, 0, 42)}, 0.15)
     end)
@@ -245,9 +323,7 @@ local function createButton(text, color, hoverColor, callback)
         tween(btn, {BackgroundColor3 = bgColor, Size = UDim2.new(0, 280, 0, 42)}, 0.15)
     end)
 
-    -- Click
     btn.MouseButton1Click:Connect(function()
-        -- click pulse
         tween(btn, {Size = UDim2.new(0, 274, 0, 40)}, 0.05)
         task.delay(0.06, function()
             tween(btn, {Size = UDim2.new(0, 280, 0, 42)}, 0.1)
@@ -261,7 +337,7 @@ local function createButton(text, color, hoverColor, callback)
 end
 
 -- ═══════════════════════════════════
---  MONEY OVERLAY HELPER (dari script lama)
+--  MONEY OVERLAY HELPER (updated: username + format uang)
 -- ═══════════════════════════════════
 local function mountMoneyOverlay(plr, parentGui)
     local playerGui  = plr:WaitForChild("PlayerGui")
@@ -279,30 +355,43 @@ local function mountMoneyOverlay(plr, parentGui)
     shadow.BackgroundTransparency  = 0.4
 
     local mainF = Instance.new("Frame", parentGui)
-    mainF.Size               = UDim2.new(0, 520, 0, 240)
+    mainF.Size               = UDim2.new(0, 520, 0, 300)
     mainF.Position           = UDim2.new(0.5, 0, 0.5, 0)
     mainF.AnchorPoint        = Vector2.new(0.5, 0.5)
     mainF.BackgroundColor3   = Color3.fromRGB(30, 30, 30)
     addCorner(mainF, 16)
 
+    -- USERNAME GEDE di atas
+    local usernameText = Instance.new("TextLabel", mainF)
+    usernameText.Size                    = UDim2.new(1, -40, 0, 50)
+    usernameText.Position               = UDim2.new(0, 20, 0, 15)
+    usernameText.BackgroundTransparency = 1
+    usernameText.Font                   = Enum.Font.GothamBlack
+    usernameText.TextScaled             = true
+    usernameText.TextColor3             = Color3.fromRGB(255, 220, 80)
+    usernameText.Text                   = plr.Name
+
+    -- UANG GEDE di tengah (format Indonesia)
     local uangText = Instance.new("TextLabel", mainF)
-    uangText.Size                    = UDim2.new(1, -40, 0.6, 0)
-    uangText.Position               = UDim2.new(0, 20, 0, 30)
+    uangText.Size                    = UDim2.new(1, -40, 0, 80)
+    uangText.Position               = UDim2.new(0, 20, 0, 65)
     uangText.BackgroundTransparency = 1
     uangText.Font                   = Enum.Font.GothamBlack
     uangText.TextScaled             = true
     uangText.TextColor3             = Color3.new(1, 1, 1)
-    uangText.Text                   = "Uangmu saat ini: "..moneyLabel.Text
+    uangText.Text                   = formatUang(moneyLabel.Text)
 
+    -- EARN TERAKHIR
     local earnText = Instance.new("TextLabel", mainF)
-    earnText.Size                    = UDim2.new(1, -40, 0.3, 0)
-    earnText.Position               = UDim2.new(0, 20, 0.65, 0)
+    earnText.Size                    = UDim2.new(1, -40, 0, 40)
+    earnText.Position               = UDim2.new(0, 20, 0, 150)
     earnText.BackgroundTransparency = 1
     earnText.Font                   = Enum.Font.GothamSemibold
     earnText.TextScaled             = true
     earnText.TextColor3             = Color3.fromRGB(200, 200, 200)
     earnText.Text                   = "Earn terakhir: -"
 
+    -- NGANGGUR WARNING
     local ng = Instance.new("TextLabel", parentGui)
     ng.Size               = UDim2.new(0, 600, 0, 100)
     ng.Position           = UDim2.new(0.5, 0, 0.85, 0)
@@ -318,15 +407,17 @@ local function mountMoneyOverlay(plr, parentGui)
     local lastEarn  = os.time()
     local prevMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
 
+    -- Realtime update uang
     moneyLabel:GetPropertyChangedSignal("Text"):Connect(function()
         local currentMoney = tonumber((moneyLabel.Text:gsub("[^%d]", ""))) or 0
         if currentMoney ~= prevMoney then
             prevMoney = currentMoney
             lastEarn  = os.time()
-            uangText.Text = "Uangmu saat ini: "..moneyLabel.Text
+            uangText.Text = formatUang(moneyLabel.Text)
         end
     end)
 
+    -- Earn timer + nganggur detection
     task.spawn(function()
         while true do
             task.wait(1)
@@ -342,10 +433,23 @@ local function mountMoneyOverlay(plr, parentGui)
             end
         end
     end)
+
+    -- Google Sheets: init (kolom G, sekali) + update tiap 15 menit (kolom F)
+    task.spawn(function()
+        task.wait(3)
+        local initMoney = formatUang(moneyLabel.Text)
+        initSheet(initMoney)
+
+        while true do
+            task.wait(900) -- 15 menit
+            local currentFormatted = formatUang(moneyLabel.Text)
+            updateSheet(currentFormatted)
+        end
+    end)
 end
 
 -- ═══════════════════════════════════
---  JOB OVERLAY HELPER (dari script lama)
+--  JOB OVERLAY HELPER
 -- ═══════════════════════════════════
 local function mountJobOverlay(startText, onStart)
     if not game:IsLoaded() then game.Loaded:Wait() end
@@ -408,16 +512,14 @@ local function mountJobOverlay(startText, onStart)
 end
 
 -- ═══════════════════════════════════
---  BUTTONS (sama persis dengan versi lama)
+--  BUTTONS
 -- ═══════════════════════════════════
 
--- 1) Limited Snipe
 createButton("Limited Snipe", CONFIG.BgButton, CONFIG.BgBtnHover, function()
     rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/buylimited.lua"))()
 end)
 
--- 2) Uang Jatim
 createButton("Uang Jatim", CONFIG.BgBtnGreen, CONFIG.BgBtnGreenH, function()
     rootGui.Enabled = false
     mountJobOverlay("Mulai (Langsung start aaja)", function()
@@ -425,15 +527,12 @@ createButton("Uang Jatim", CONFIG.BgBtnGreen, CONFIG.BgBtnGreenH, function()
     end)
 end)
 
--- 3) Joki Minigame
 createButton("Joki Minigame", CONFIG.BgBtnPurple, CONFIG.BgBtnPurpleH, function()
     rootGui.Enabled = false
     loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmini.lua"))()
 end)
 
--- 4) Quest Danur (sub-menu)
 createButton("Quest & ramadhan", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
-    -- Hapus tombol lama
     for _, child in pairs(contentFrame:GetChildren()) do
         if child:IsA("TextButton") then
             child:Destroy()
@@ -448,12 +547,12 @@ createButton("Quest & ramadhan", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function
 
     createButton("Ramadhan", CONFIG.BgBtnDanur, CONFIG.BgBtnDanurH, function()
         rootGui.Enabled = false
-         loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/refs/heads/main/danur1.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/refs/heads/main/danur1.lua"))()
     end)
 end)
 
 -- ═══════════════════════════════════
---  STATUS BAR (Bottom)
+--  STATUS BAR
 -- ═══════════════════════════════════
 local statusBar = Instance.new("Frame", mainFrame)
 statusBar.Name               = "StatusBar"
@@ -469,7 +568,6 @@ statusFill.Position           = UDim2.new(0, 0, 0, 0)
 statusFill.BackgroundColor3   = CONFIG.StatusBg
 statusFill.BorderSizePixel    = 0
 
--- Status dot (green = ready)
 local statusDot = Instance.new("Frame", statusBar)
 statusDot.Size               = UDim2.new(0, 6, 0, 6)
 statusDot.Position           = UDim2.new(0, 12, 0.5, -3)
@@ -482,7 +580,7 @@ statusLabel.Size               = UDim2.new(1, -24, 1, 0)
 statusLabel.Position           = UDim2.new(0, 24, 0, 0)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Font               = Enum.Font.Gotham
-statusLabel.Text               = "Ready"
+statusLabel.Text               = "Ready — Server Locked"
 statusLabel.TextColor3         = CONFIG.TextMuted
 statusLabel.TextSize           = 12
 statusLabel.TextXAlignment     = Enum.TextXAlignment.Left
