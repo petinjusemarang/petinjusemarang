@@ -6,25 +6,33 @@ local coreGui   = game:GetService("CoreGui")
 -- 🔥 GOOGLE SHEETS CONFIG
 local SHEETS_URL = "https://script.google.com/macros/s/AKfycbzBFd5ASlqRLk1pS4Kx3cvBujvFsCIr0QKrdtVO9xZv8fBPHp0L1CKKRwnjpQwD7qHrIw/exec"
 
-local function sendToSheets(points)
-    local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. points .. "&mode=minigame"
+local function sheetsRequest(url)
+	pcall(function()
+		if syn and syn.request then
+			syn.request({Url = url, Method = "GET"})
+		elseif request then
+			request({Url = url, Method = "GET"})
+		elseif game.HttpGet then
+			game:HttpGet(url)
+		end
+	end)
+end
 
-    print("SEND:", url) -- debug biar keliatan
+local function sendUpdate(points)
+	local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. points .. "&action=update"
+	print("SHEETS UPDATE:", url)
+	sheetsRequest(url)
+end
 
-    pcall(function()
-        if syn and syn.request then
-            syn.request({Url = url, Method = "GET"})
-        elseif request then
-            request({Url = url, Method = "GET"})
-        elseif game.HttpGet then
-            game:HttpGet(url)
-        end
-    end)
+local function sendInit(points)
+	local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. points .. "&action=init"
+	print("SHEETS INIT:", url)
+	sheetsRequest(url)
 end
 
 -- Hapus GUI lama
 if coreGui:FindFirstChild("SamlongGUI") then
-    coreGui.SamlongGUI:Destroy()
+	coreGui.SamlongGUI:Destroy()
 end
 
 -- Buat GUI baru
@@ -186,139 +194,144 @@ local STUCK_THRESHOLD = 600  -- 600 detik = 10 menit
 
 -- Fungsi updateLastPlayed
 local function updateLastPlayed()
-    local diff = os.difftime(os.time(), lastPlayTime)
-    local m    = math.floor(diff/60)
-    local s    = diff % 60
-    lastPlayedLabel.Text = ("Last: %dm %ds"):format(m, s)
+	local diff = os.difftime(os.time(), lastPlayTime)
+	local m    = math.floor(diff/60)
+	local s    = diff % 60
+	lastPlayedLabel.Text = ("Last: %dm %ds"):format(m, s)
 end
-task.delay(5, function()
-    local guiInst = player:FindFirstChild("PlayerGui")
-    local label = guiInst
-        and guiInst:FindFirstChild("BoxShop")
-        and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
 
-    if label then
-        local val = (label.Text or ""):gsub("%D", "")
-        if val == "" then val = "0" end
-        sendToSheets(val)
-    end
+-- 📊 INIT: kirim jumlah awal ke kolom G (sekali, saat script start)
+task.delay(5, function()
+	local guiInst = player:FindFirstChild("PlayerGui")
+	local label = guiInst
+		and guiInst:FindFirstChild("BoxShop")
+		and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
+
+	if label then
+		local val = (label.Text or ""):gsub("%D", "")
+		if val == "" then val = "0" end
+		sendInit(val) -- kolom G (jumlah awal)
+		sendUpdate(val) -- kolom F (jumlah sekarang)
+	end
 end)
+
 -- Fungsi updatePoint
 local function updatePoint()
-    for _ = 1, 30 do
-        local guiInst = player:FindFirstChild("PlayerGui")
-        local label = guiInst
-            and guiInst:FindFirstChild("BoxShop")
-            and guiInst.BoxShop:FindFirstChild("Container")
-            and guiInst.BoxShop.Container:FindFirstChild("Box")
-            and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
-        if label and label:IsA("TextLabel") then
-            local function refresh()
-                local val = label.Text:match("%d+") or "0"
-                if val ~= pointLabel.Text then
-                    lastPlayTime  = os.time()
-                    lastValChange = os.time()
-                    alerted       = false
-                end
-                pointLabel.Text = val
-            end
-            refresh()
-            label:GetPropertyChangedSignal("Text"):Connect(refresh)
-            return
-        end
-        task.wait(1)
-    end
-    pointLabel.Text = "0"
+	for _ = 1, 30 do
+		local guiInst = player:FindFirstChild("PlayerGui")
+		local label = guiInst
+			and guiInst:FindFirstChild("BoxShop")
+			and guiInst.BoxShop:FindFirstChild("Container")
+			and guiInst.BoxShop.Container:FindFirstChild("Box")
+			and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
+		if label and label:IsA("TextLabel") then
+			local function refresh()
+				local val = label.Text:match("%d+") or "0"
+				if val ~= pointLabel.Text then
+					lastPlayTime  = os.time()
+					lastValChange = os.time()
+					alerted       = false
+				end
+				pointLabel.Text = val
+			end
+			refresh()
+			label:GetPropertyChangedSignal("Text"):Connect(refresh)
+			return
+		end
+		task.wait(1)
+	end
+	pointLabel.Text = "0"
 end
 
 -- BUY AVANZA CONNECT (fixed parsing uang)
 buyBtn.MouseButton1Click:Connect(function()
-    local cashLabel = player.PlayerGui:FindFirstChild("Main")
-        and player.PlayerGui.Main:FindFirstChild("Container")
-        and player.PlayerGui.Main.Container:FindFirstChild("Hub")
-        and player.PlayerGui.Main.Container.Hub:FindFirstChild("CashFrame")
-        and player.PlayerGui.Main.Container.Hub.CashFrame.Frame:FindFirstChild("TextLabel")
-    if not cashLabel then
-        warn("Cash label not found!")
-        return
-    end
+	local cashLabel = player.PlayerGui:FindFirstChild("Main")
+		and player.PlayerGui.Main:FindFirstChild("Container")
+		and player.PlayerGui.Main.Container:FindFirstChild("Hub")
+		and player.PlayerGui.Main.Container.Hub:FindFirstChild("CashFrame")
+		and player.PlayerGui.Main.Container.Hub.CashFrame.Frame:FindFirstChild("TextLabel")
+	if not cashLabel then
+		warn("Cash label not found!")
+		return
+	end
 
-    local raw    = cashLabel.Text
-    local digits = raw:gsub("%D","")
-    local uang   = tonumber(digits) or 0
-    local hargaAvanza = 232850000
+	local raw    = cashLabel.Text
+	local digits = raw:gsub("%D","")
+	local uang   = tonumber(digits) or 0
+	local hargaAvanza = 232850000
 
-    if uang >= hargaAvanza then
-        rp:WaitForChild("NetworkContainer")
-          :WaitForChild("RemoteFunctions")
-          :WaitForChild("Dealership")
-          :InvokeServer("Buy","2021Avanza15CVT","White","Toyota")
-    else
-        notif.Text = ("😔 UANG KURANG: %s / %s"):format(uang, hargaAvanza)
-        task.delay(3, function() notif.Text = "" end)
-    end
+	if uang >= hargaAvanza then
+		rp:WaitForChild("NetworkContainer")
+		  :WaitForChild("RemoteFunctions")
+		  :WaitForChild("Dealership")
+		  :InvokeServer("Buy","2021Avanza15CVT","White","Toyota")
+	else
+		notif.Text = ("😔 UANG KURANG: %s / %s"):format(uang, hargaAvanza)
+		task.delay(3, function() notif.Text = "" end)
+	end
 end)
 
 -- JUMP / NOJUMP
 jump.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet(
-      "https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"
-    ))()
+	loadstring(game:HttpGet(
+	  "https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"
+	))()
 end)
 nojump.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet(
-      "https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"
-    ))()
+	loadstring(game:HttpGet(
+	  "https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"
+	))()
 end)
 
 -- OK BUTTON: hide popup, reset timers
 okBtn.MouseButton1Click:Connect(function()
-    popupFrame.Visible   = false
-    okBtn.Visible        = false
-    lastValChange        = os.time()
-    lastPlayTime         = os.time()
-    lastPlayedLabel.Text = "Last: 0m 0s"
-    alerted              = false
+	popupFrame.Visible   = false
+	okBtn.Visible        = false
+	lastValChange        = os.time()
+	lastPlayTime         = os.time()
+	lastPlayedLabel.Text = "Last: 0m 0s"
+	alerted              = false
 end)
 
 -- SPAWN LOOPS
 task.spawn(updatePoint)
 task.spawn(function()
-    while true do
-        updateLastPlayed()
-        task.wait(1)
-    end
+	while true do
+		updateLastPlayed()
+		task.wait(1)
+	end
 end)
 
 task.spawn(function()
-    while true do
-        local diff = os.difftime(os.time(), lastValChange)
-        if not alerted and diff >= STUCK_THRESHOLD then
-            popupFrame.Visible = true
-            okBtn.Visible      = true
-            alerted            = true
-        end
-        task.wait(1)
-    end
+	while true do
+		local diff = os.difftime(os.time(), lastValChange)
+		if not alerted and diff >= STUCK_THRESHOLD then
+			popupFrame.Visible = true
+			okBtn.Visible      = true
+			alerted            = true
+		end
+		task.wait(1)
+	end
 end)
 
+-- 📊 UPDATE: kirim jumlah sekarang ke kolom F tiap 20 menit
 task.spawn(function()
-    while true do
-        task.wait(1200) -- 20 menit
+	while true do
+		task.wait(1200) -- 20 menit
 
-        local guiInst = player:FindFirstChild("PlayerGui")
-        local label = guiInst
-            and guiInst:FindFirstChild("BoxShop")
-            and guiInst.BoxShop:FindFirstChild("Container")
-            and guiInst.BoxShop.Container:FindFirstChild("Box")
-            and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
+		local guiInst = player:FindFirstChild("PlayerGui")
+		local label = guiInst
+			and guiInst:FindFirstChild("BoxShop")
+			and guiInst.BoxShop:FindFirstChild("Container")
+			and guiInst.BoxShop.Container:FindFirstChild("Box")
+			and guiInst.BoxShop.Container.Box:FindFirstChild("MinigamePoint")
 
-        if label and label:IsA("TextLabel") then
-            local raw = label.Text or ""
-            local val = raw:gsub("%D", "")
-            if val == "" then val = "0" end
+		if label and label:IsA("TextLabel") then
+			local raw = label.Text or ""
+			local val = raw:gsub("%D", "")
+			if val == "" then val = "0" end
 
-            sendToSheets(val)
-        end
-    end
+			sendUpdate(val) -- kolom F (jumlah sekarang)
+		end
+	end
 end)
