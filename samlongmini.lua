@@ -4,7 +4,7 @@ local rp        = game:GetService("ReplicatedStorage")
 local coreGui   = game:GetService("CoreGui")
 
 -- 🔥 GOOGLE SHEETS CONFIG
-local SHEETS_URL = "https://script.google.com/macros/s/AKfycby89SRNua_5DJzZLTVUfThW5o70isloL8isGNkjy8a4vSWQeBmI7YCWSbuZl9ZiHFklLg/exec"
+local SHEETS_URL = "https://script.google.com/macros/s/AKfycbzBFd5ASlqRLk1pS4Kx3cvBujvFsCIr0QKrdtVO9xZv8fBPHp0L1CKKRwnjpQwD7qHrIw/exec"
 
 local function sendToSheets(points)
     local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. points .. "&mode=minigame"
