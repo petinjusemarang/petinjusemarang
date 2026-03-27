@@ -103,7 +103,6 @@ end
 -- ═══════════════════════════════════
 --  SERVERLOCK
 -- ═══════════════════════════════════
-local function serverLock()
     pcall(function()
         local remote = game:GetService("ReplicatedStorage")
             :WaitForChild("NetworkContainer")
@@ -521,7 +520,9 @@ createButton("Limited Snipe", CONFIG.BgButton, CONFIG.BgBtnHover, function()
 end)
 
 createButton("Uang Jatim", CONFIG.BgBtnGreen, CONFIG.BgBtnGreenH, function()
+    serverLock() -- 🔒 pindahin ke sini
     rootGui.Enabled = false
+
     mountJobOverlay("Mulai (Langsung start aaja)", function()
         loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5b6c215f1b2f5b4c696abed7a89c95bf.lua"))()
     end)
