@@ -103,6 +103,7 @@ end
 -- ═══════════════════════════════════
 --  SERVERLOCK
 -- ═══════════════════════════════════
+local function serverLock()
     pcall(function()
         local remote = game:GetService("ReplicatedStorage")
             :WaitForChild("NetworkContainer")
@@ -144,9 +145,6 @@ screenGui.ResetOnSpawn       = false
 screenGui.Parent             = player:WaitForChild("PlayerGui")
 
 local rootGui = screenGui
-
--- 🔒 AUTO SERVERLOCK saat GUI muncul
-serverLock()
 
 -- ═══════════════════════════════════
 --  MAIN FRAME
