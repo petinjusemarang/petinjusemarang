@@ -1,11 +1,20 @@
 -- GUI FUTURISTIK SAMLONG - RESET WAKTU SAAT POINT BERUBAH + ROBUST STUCK DETECTION + RESET TIMER PADA OK
+-- Updated: Dual Google Sheets + Railway API
 local player    = game.Players.LocalPlayer
 local rp        = game:GetService("ReplicatedStorage")
 local coreGui   = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 
 -- 🔥 GOOGLE SHEETS CONFIG
 local SHEETS_URL = "https://script.google.com/macros/s/AKfycbzBFd5ASlqRLk1pS4Kx3cvBujvFsCIr0QKrdtVO9xZv8fBPHp0L1CKKRwnjpQwD7qHrIw/exec"
 
+-- 🔥 RAILWAY API CONFIG
+local API_URL = "https://samlongweb-production.up.railway.app"
+local API_KEY = "slg_prod_nJjQZJQ4kR98l9zTfTJ56CBgeDrzxaws0eFk7rYJg2SAhvu7WRloXti3KkiXRnYN"  -- SAMA dengan di .env Railway
+
+-- ═══════════════════════════════════
+--  GOOGLE SHEETS HELPER
+-- ═══════════════════════════════════
 local function sheetsRequest(url)
 	pcall(function()
 		if syn and syn.request then
@@ -28,6 +37,31 @@ local function sendInit(points)
 	local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. points .. "&action=init"
 	print("SHEETS INIT:", url)
 	sheetsRequest(url)
+end
+
+-- ═══════════════════════════════════
+--  RAILWAY API HELPER
+-- ═══════════════════════════════════
+local function apiUpdate(username, rawPoints)
+	pcall(function()
+		local req = (syn and syn.request) or (http and http.request) or request
+		if req then
+			req({
+				Url = API_URL .. "/api/update",
+				Method = "POST",
+				Headers = {
+					["Content-Type"] = "application/json",
+					["x-api-key"] = API_KEY,
+				},
+				Body = HttpService:JSONEncode({
+					username = username,
+					current_progress = rawPoints,
+					current_amount = rawPoints,
+				}),
+			})
+			print("[API] Updated:", username, "points:", rawPoints)
+		end
+	end)
 end
 
 -- Hapus GUI lama
@@ -200,7 +234,7 @@ local function updateLastPlayed()
 	lastPlayedLabel.Text = ("Last: %dm %ds"):format(m, s)
 end
 
--- 📊 INIT: kirim jumlah awal ke kolom G (sekali, saat script start)
+-- 📊 INIT: kirim jumlah awal ke Google Sheets + Railway API (sekali, saat script start)
 task.delay(5, function()
 	local guiInst = player:FindFirstChild("PlayerGui")
 	local label = guiInst
@@ -210,8 +244,14 @@ task.delay(5, function()
 	if label then
 		local val = (label.Text or ""):gsub("%D", "")
 		if val == "" then val = "0" end
-		sendInit(val) -- kolom G (jumlah awal)
-		sendUpdate(val) -- kolom F (jumlah sekarang)
+
+		-- Google Sheets
+		sendInit(val)
+		sendUpdate(val)
+
+		-- Railway API (first call → backend auto-sets start_amount)
+		local rawNum = tonumber(val) or 0
+		apiUpdate(player.Name, rawNum)
 	end
 end)
 
@@ -314,7 +354,7 @@ task.spawn(function()
 	end
 end)
 
--- 📊 UPDATE: kirim jumlah sekarang ke kolom F tiap 20 menit
+-- 📊 UPDATE: kirim jumlah sekarang ke Google Sheets + Railway API tiap 20 menit
 task.spawn(function()
 	while true do
 		task.wait(1200) -- 20 menit
@@ -331,7 +371,12 @@ task.spawn(function()
 			local val = raw:gsub("%D", "")
 			if val == "" then val = "0" end
 
-			sendUpdate(val) -- kolom F (jumlah sekarang)
+			-- Google Sheets
+			sendUpdate(val)
+
+			-- Railway API
+			local rawNum = tonumber(val) or 0
+			apiUpdate(player.Name, rawNum)
 		end
 	end
 end)
