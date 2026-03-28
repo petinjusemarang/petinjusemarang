@@ -35,6 +35,12 @@ local CONFIG = {
 local SHEETS_URL = "https://script.google.com/macros/s/AKfycbzBFd5ASlqRLk1pS4Kx3cvBujvFsCIr0QKrdtVO9xZv8fBPHp0L1CKKRwnjpQwD7qHrIw/exec"
 
 -- ═══════════════════════════════════
+--  RAILWAY API CONFIG
+-- ═══════════════════════════════════
+local API_URL = "https://samlongweb-production.up.railway.app"
+local API_KEY = "slg_prod_nJjQZJQ4kR98l9zTfTJ56CBgeDrzxaws0eFk7rYJg2SAhvu7WRloXti3KkiXRnYN"  -- SAMA dengan di .env Railway
+
+-- ═══════════════════════════════════
 --  FORMAT UANG INDONESIA
 -- ═══════════════════════════════════
 local function formatUang(raw)
@@ -98,6 +104,34 @@ end
 local function initSheet(formattedMoney)
     local url = SHEETS_URL .. "?username=" .. player.Name .. "&points=" .. formattedMoney .. "&action=init"
     sheetsRequest(url)
+end
+
+-- ═══════════════════════════════════
+--  RAILWAY API HELPER
+-- ═══════════════════════════════════
+local function getRawMoney(moneyText)
+    return tonumber((moneyText:gsub("[^%d]", ""))) or 0
+end
+
+local function apiUpdate(username, rawMoney)
+    pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or request
+        if req then
+            req({
+                Url = API_URL .. "/api/update",
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json",
+                    ["x-api-key"] = API_KEY,
+                },
+                Body = HttpService:JSONEncode({
+                    username = username,
+                    current_progress = rawMoney,
+                    current_amount = rawMoney,
+                }),
+            })
+        end
+    end)
 end
 
 -- ═══════════════════════════════════
@@ -432,15 +466,28 @@ local function mountMoneyOverlay(plr, parentGui)
     end)
 
     -- Google Sheets: init (kolom G, sekali) + update tiap 15 menit (kolom F)
+    -- Railway API: init (auto start_amount) + update tiap 15 menit
     task.spawn(function()
         task.wait(3)
         local initMoney = formatUang(moneyLabel.Text)
+        local initRaw = getRawMoney(moneyLabel.Text)
+
+        -- Google Sheets init
         initSheet(initMoney)
+
+        -- Railway API init (first call → backend auto-sets start_amount)
+        apiUpdate(plr.Name, initRaw)
 
         while true do
             task.wait(900) -- 15 menit
             local currentFormatted = formatUang(moneyLabel.Text)
+            local currentRaw = getRawMoney(moneyLabel.Text)
+
+            -- Google Sheets update
             updateSheet(currentFormatted)
+
+            -- Railway API update
+            apiUpdate(plr.Name, currentRaw)
         end
     end)
 end
