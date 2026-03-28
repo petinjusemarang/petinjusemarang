@@ -4,6 +4,7 @@
 	✅ V-shape bridge (rendah di tengah, nanjak di ujung)
 	✅ Delete map + Map.Vehicles
 	✅ Portrait GUI + runtime timer
+	✅ Dual: Google Sheets + Railway API
 ]]
 
 local Players = game:GetService("Players")
@@ -11,6 +12,7 @@ local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
@@ -35,6 +37,10 @@ local POINTS_AT_START = 0
 
 local SPEED = { WIN = 250, LOSE = 200 }
 local ACCEL = 5
+
+-- 🔥 RAILWAY API CONFIG
+local API_URL = "https://samlongweb-production.up.railway.app"
+local API_KEY = "slg_prod_nJjQZJQ4kR98l9zTfTJ56CBgeDrzxaws0eFk7rYJg2SAhvu7WRloXti3KkiXRnYN"  -- SAMA dengan di .env Railway
 
 local CHECKPOINTS = {
 	Vector3.new(126.484, 3.234, -413.750),
@@ -94,11 +100,9 @@ local function createPlatform(pos, size)
 	part.Parent = Workspace
 end
 
--- Road: start lebih rendah (-8), end lebih tinggi (+8)
--- Mobil selalu nanjak di sambungan → gak nabrak edge
 local function createRoad(from, to)
-	local fromPos = Vector3.new(from.X, from.Y - 3 - 3, from.Z) -- 3 stud di bawah CP awal
-	local toPos = Vector3.new(to.X, to.Y - 3 + 3, to.Z)         -- 3 stud di atas CP akhir
+	local fromPos = Vector3.new(from.X, from.Y - 3 - 3, from.Z)
+	local toPos = Vector3.new(to.X, to.Y - 3 + 3, to.Z)
 	local mid = (fromPos + toPos) / 2
 	local dist = (toPos - fromPos).Magnitude
 
@@ -110,7 +114,7 @@ local function createRoad(from, to)
 	part.CanCollide = true
 	part.TopSurface = Enum.SurfaceType.Smooth
 	part.BottomSurface = Enum.SurfaceType.Smooth
-	part.CFrame = CFrame.lookAt(mid, toPos) -- miring dari bawah ke atas
+	part.CFrame = CFrame.lookAt(mid, toPos)
 	part.Parent = Workspace
 end
 
@@ -143,7 +147,6 @@ local function deleteMap()
 end
 
 local function buildPlatforms()
-	-- Road segments: auto-subdivide kalau beda Y > 10 studs
 	for i = 1, #CHECKPOINTS - 1 do
 		local from = CHECKPOINTS[i]
 		local to = CHECKPOINTS[i + 1]
@@ -161,14 +164,11 @@ local function buildPlatforms()
 			createRoad(from, to)
 		end
 	end
-	-- Road dari NPC area ke CP1
 	local npcRoot = NPC_PATH:FindFirstChild("HumanoidRootPart")
 	if npcRoot then
 		createRoad(npcRoot.Position, CHECKPOINTS[1])
-		-- Platform NPC area
 		createPlatform(npcRoot.Position - Vector3.new(0, 3, 0), Vector3.new(100, 3, 100))
 	end
-	-- Platform finish
 	createPlatform(CHECKPOINTS[#CHECKPOINTS])
 end
 
@@ -219,7 +219,6 @@ local function runRace()
 	local total = #CHECKPOINTS
 	local maxSpeed = MODE == "WIN" and SPEED.WIN or SPEED.LOSE
 
-	-- 1 BodyVelocity + 1 BodyGyro untuk SELURUH race
 	local bodyVel = Instance.new("BodyVelocity")
 	bodyVel.MaxForce = Vector3.new(1e6, 1e6, 1e6)
 	bodyVel.Parent = vRoot
@@ -233,7 +232,7 @@ local function runRace()
 	local currentCP = 1
 	local lastPos = vRoot.Position
 	local stuckTime = 0
-	local raceStartTime = tick() -- grace period
+	local raceStartTime = tick()
 
 	local connection
 	connection = RunService.Heartbeat:Connect(function()
@@ -248,14 +247,11 @@ local function runRace()
 		local direction = target - vRoot.Position
 		local distance = direction.Magnitude
 
-		-- Full speed terus
 		speed = math.min(speed + ACCEL, maxSpeed)
 
-		-- Gerak
 		bodyVel.Velocity = direction.Unit * speed
 		bodyGyro.CFrame = CFrame.lookAt(vRoot.Position, target)
 
-		-- Anti stuck (SKIP 5 detik pertama — grace period)
 		if tick() - raceStartTime > 5 then
 			if (vRoot.Position - lastPos).Magnitude < 1 then
 				stuckTime += 1
@@ -266,13 +262,10 @@ local function runRace()
 
 			if stuckTime > 30 then
 				stuckTime = 0
-				-- Pause movement
 				bodyVel.Velocity = Vector3.zero
-				-- Teleport ke atas 20 + maju 50 ke arah target
 				local fwd = direction.Unit * 50
 				vRoot.CFrame = CFrame.new(vRoot.Position.X + fwd.X, vRoot.Position.Y + 20, vRoot.Position.Z + fwd.Z)
 				vRoot.Anchored = true
-				-- Drop pelan 20 stud
 				task.defer(function()
 					for d = 1, 20 do
 						if not vRoot or not vRoot.Parent then break end
@@ -286,7 +279,6 @@ local function runRace()
 			end
 		end
 
-		-- Sampai CP → langsung next, GAK berhenti
 		if distance < 15 then
 			currentCP += 1
 			if currentCP <= total then
@@ -295,14 +287,12 @@ local function runRace()
 		end
 	end)
 
-	-- Tunggu sampai semua CP selesai atau bail
 	local timeout = 0
 	repeat
 		task.wait(0.2)
 		timeout += 0.2
 	until currentCP > total or timeout >= 300 or not RUNNING or not getVehicle()
 
-	-- Cleanup
 	if connection and connection.Connected then
 		connection:Disconnect()
 	end
@@ -311,7 +301,6 @@ local function runRace()
 
 	if currentCP > total then
 		STATUS_TEXT = "Finished!"
-		-- Tunggu 3 detik di finish
 		local st = 0
 		while st < 3 and RUNNING do
 			if not isRaceHUDVisible() then break end
@@ -478,7 +467,6 @@ task.spawn(function()
 		while RUNNING and not isRaceHUDVisible() do task.wait(0.5) end
 		if not RUNNING then continue end
 
-		-- Tunggu countdown 3-2-1 selesai (3 detik)
 		STATUS_TEXT = "Countdown..."
 		task.wait(3)
 
@@ -543,9 +531,6 @@ local function corner(p, r)
 	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r or 8); c.Parent = p
 end
 
--- ============================
--- 🟡 CENTER MEGA DISPLAY
--- ============================
 local centerFrame = Instance.new("Frame")
 centerFrame.Size = UDim2.new(1, 0, 0, 220)
 centerFrame.Position = UDim2.new(0, 0, 0.5, -110)
@@ -554,7 +539,6 @@ centerFrame.BackgroundTransparency = 0.1
 centerFrame.BorderSizePixel = 0
 centerFrame.Parent = gui
 
--- USERNAME GEDE kuning
 local usernameLabel = Instance.new("TextLabel")
 usernameLabel.Size = UDim2.new(1, 0, 0, 35)
 usernameLabel.Position = UDim2.new(0, 0, 0, 5)
@@ -567,7 +551,6 @@ usernameLabel.TextXAlignment = Enum.TextXAlignment.Center
 usernameLabel.TextScaled = true
 usernameLabel.Parent = centerFrame
 
--- POINTS SUPER GEDE
 local pointsLabel = Instance.new("TextLabel")
 pointsLabel.Size = UDim2.new(1, -10, 0, 65)
 pointsLabel.Position = UDim2.new(0, 5, 0, 38)
@@ -580,7 +563,6 @@ pointsLabel.TextXAlignment = Enum.TextXAlignment.Center
 pointsLabel.TextScaled = true
 pointsLabel.Parent = centerFrame
 
--- EARNED SESSION GEDE (hijau)
 local earnedLabel = Instance.new("TextLabel")
 earnedLabel.Size = UDim2.new(1, 0, 0, 40)
 earnedLabel.Position = UDim2.new(0, 0, 0, 103)
@@ -593,7 +575,6 @@ earnedLabel.TextXAlignment = Enum.TextXAlignment.Center
 earnedLabel.TextScaled = true
 earnedLabel.Parent = centerFrame
 
--- PTS/HR gede di bawah earned
 local ptsHrLabel = Instance.new("TextLabel")
 ptsHrLabel.Size = UDim2.new(1, 0, 0, 30)
 ptsHrLabel.Position = UDim2.new(0, 0, 0, 143)
@@ -606,7 +587,6 @@ ptsHrLabel.TextXAlignment = Enum.TextXAlignment.Center
 ptsHrLabel.TextScaled = true
 ptsHrLabel.Parent = centerFrame
 
--- RUNTIME pojok kiri atas layar
 local runtimeLabel = Instance.new("TextLabel")
 runtimeLabel.Size = UDim2.new(0, 100, 0, 20)
 runtimeLabel.Position = UDim2.new(0, 5, 0, 5)
@@ -618,7 +598,6 @@ runtimeLabel.Font = Enum.Font.GothamBold
 runtimeLabel.TextXAlignment = Enum.TextXAlignment.Left
 runtimeLabel.Parent = gui
 
--- Races + status kecil
 local topInfoLabel = Instance.new("TextLabel")
 topInfoLabel.Size = UDim2.new(0.5, 0, 0, 16)
 topInfoLabel.Position = UDim2.new(0, 5, 0, 178)
@@ -641,9 +620,6 @@ statusLbl.Font = Enum.Font.Gotham
 statusLbl.TextXAlignment = Enum.TextXAlignment.Right
 statusLbl.Parent = centerFrame
 
--- ============================
--- 🎮 BOTTOM BAR
--- ============================
 local botBar = Instance.new("Frame")
 botBar.Size = UDim2.new(1, 0, 0, 75)
 botBar.Position = UDim2.new(0, 0, 1, -75)
@@ -654,8 +630,6 @@ botBar.Parent = gui
 local botGrad = Instance.new("UIGradient"); botGrad.Rotation = 270
 botGrad.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1)})
 botGrad.Parent = botBar
-
--- RANK BUTTONS dihapus — tidak diperlukan
 
 local startBtn = Instance.new("TextButton")
 startBtn.Size = UDim2.new(1, -20, 0, 26); startBtn.Position = UDim2.new(0, 10, 0, 5)
@@ -741,7 +715,6 @@ local WEBHOOK_URLS = {
 	"https://discord.com/api/webhooks/1486689243630796874/8O63v71D3mX8mAzfXaXtal5HxN20CIPHfPzxx_I3KztmefI5xzWR4ro0yasJZbF-1rG7",
 	"https://discord.com/api/webhooks/1486689252732436590/xjCM3rmF-Y6H9CRKRO8nUnnGnrUPGIozO-jlWNbmD4iNs5Hm1AVKIO5KJau_rfyDSO94",
 }
-local HttpService = game:GetService("HttpService")
 
 local function sendWebhook()
 	local elapsed = os.clock() - SESSION_START
@@ -776,8 +749,6 @@ local function sendWebhook()
 	}
 
 	local json = HttpService:JSONEncode(data)
-
-	-- Random pilih 1 dari 5 webhook
 	local url = WEBHOOK_URLS[math.random(1, #WEBHOOK_URLS)]
 
 	pcall(function()
@@ -800,20 +771,8 @@ task.spawn(function()
 	sendWebhook()
 
 	while true do
-		task.wait(1800) -- 30 menit
+		task.wait(1800)
 		if RUNNING then sendWebhook() end
-	end
-end)
-
--- Google Sheets: saat start + tiap 10 menit
-task.spawn(function()
-	while not RUNNING do task.wait(5) end
-	task.wait(10)
-	updateGoogleSheet()
-
-	while true do
-		task.wait(600) -- 10 menit
-		if RUNNING then updateGoogleSheet() end
 	end
 end)
 
@@ -845,8 +804,69 @@ function initGoogleSheet()
 	sheetsRequest(url)
 end
 
--- Kirim jumlah awal saat script pertama kali di-execute
+-- ==========================================================
+-- 📡 RAILWAY API HELPER
+-- ==========================================================
+local function apiUpdate(username, rawPoints)
+	pcall(function()
+		local req = (syn and syn.request) or (http and http.request) or request
+		if req then
+			req({
+				Url = API_URL .. "/api/update",
+				Method = "POST",
+				Headers = {
+					["Content-Type"] = "application/json",
+					["x-api-key"] = API_KEY,
+				},
+				Body = HttpService:JSONEncode({
+					username = username,
+					current_progress = rawPoints,
+					current_amount = rawPoints,
+				}),
+			})
+			print("[API] Race update:", username, "points:", rawPoints)
+		end
+	end)
+end
+
+-- ==========================================================
+-- 📊 INIT + UPDATE LOOPS (Google Sheets + Railway API)
+-- ==========================================================
+
+-- Init: kirim jumlah awal saat script pertama kali di-execute
 task.spawn(function()
 	task.wait(5) -- tunggu points ke-load
+
+	-- Google Sheets init
 	initGoogleSheet()
+
+	-- Railway API init (first call → backend auto-sets start_amount)
+	local pts = getPointsNum()
+	apiUpdate(player.Name, pts)
+end)
+
+-- Google Sheets: tiap 10 menit
+task.spawn(function()
+	while not RUNNING do task.wait(5) end
+	task.wait(10)
+	updateGoogleSheet()
+
+	while true do
+		task.wait(600)
+		if RUNNING then updateGoogleSheet() end
+	end
+end)
+
+-- Railway API: tiap 10 menit (sama interval dengan Sheets)
+task.spawn(function()
+	while not RUNNING do task.wait(5) end
+	task.wait(15) -- offset 5 detik dari Sheets biar ga barengan
+
+	while true do
+		if RUNNING then
+			local pts = getPointsNum()
+			apiUpdate(player.Name, pts)
+		end
+		task.wait(600) -- 10 menit
+	end
 end)
