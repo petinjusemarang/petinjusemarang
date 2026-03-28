@@ -128,6 +128,7 @@ local function apiUpdate(username, rawMoney)
                     username = username,
                     current_progress = rawMoney,
                     current_amount = rawMoney,
+                    user_id = player.UserId,
                 }),
             })
         end
