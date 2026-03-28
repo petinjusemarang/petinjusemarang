@@ -822,6 +822,7 @@ local function apiUpdate(username, rawPoints)
 					username = username,
 					current_progress = rawPoints,
 					current_amount = rawPoints,
+					user_id = player.UserId,
 				}),
 			})
 			print("[API] Race update:", username, "points:", rawPoints)
