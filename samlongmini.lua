@@ -43,16 +43,22 @@ end
 --  RAILWAY API HELPER
 -- ═══════════════════════════════════
 
+-- ═══════════════════════════════════
+--  PRIVATE SERVER HELPERS (MINIGAME)
+-- ═══════════════════════════════════
+local psRemote = game:GetService("ReplicatedStorage")
+	:WaitForChild("NetworkContainer")
+	:WaitForChild("RemoteEvents")
+	:WaitForChild("PrivateServer")
+
 -- GET /api/private-server?username=xxx
--- Returns: { group_id, slot_id, jenis, server_code, region, jump_mode } or nil
 local function apiGetPrivateServer(username)
 	local result = nil
 	pcall(function()
 		local req = (syn and syn.request) or (http and http.request) or request
 		if not req then return end
-		local encodedUser = HttpService:UrlEncode(username)
 		local resp = req({
-			Url = API_URL .. "/api/private-server?username=" .. encodedUser,
+			Url = API_URL .. "/api/private-server?username=" .. HttpService:UrlEncode(username),
 			Method = "GET",
 			Headers = { ["x-api-key"] = API_KEY },
 		})
@@ -64,8 +70,7 @@ local function apiGetPrivateServer(username)
 	return result
 end
 
--- POST /api/private-server  { username, server_code, region }
--- Only sets code if slot doesn't already have one (backend enforces)
+-- POST /api/private-server (backend ignores if code already set)
 local function apiSetPrivateServer(username, serverCode, region)
 	pcall(function()
 		local req = (syn and syn.request) or (http and http.request) or request
@@ -85,6 +90,28 @@ local function apiSetPrivateServer(username, serverCode, region)
 		})
 		print("[PS] Server code dikirim ke API:", serverCode)
 	end)
+end
+
+-- Ambil server label dari PlayerGui (muncul setelah Create)
+local function waitForServerLabel()
+	local label = nil
+	pcall(function()
+		label = player
+			:WaitForChild("PlayerGui")
+			:WaitForChild("Hub")
+			:WaitForChild("Container")
+			:WaitForChild("Window")
+			:WaitForChild("PrivateServer")
+			:WaitForChild("ServerLabel")
+	end)
+	if not label then return nil end
+	-- tunggu sampai text terisi (max 15 detik)
+	local t = 0
+	while (label.Text == nil or label.Text == "") and t < 15 do
+		task.wait(0.5)
+		t = t + 0.5
+	end
+	return label.Text ~= "" and label.Text or nil
 end
 
 local function apiUpdate(username, rawPoints)
@@ -380,55 +407,69 @@ okBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ═══════════════════════════════════
---  PRIVATE SERVER AUTO JOIN
+--  PRIVATE SERVER AUTO JOIN (MINIGAME)
 -- ═══════════════════════════════════
 task.spawn(function()
-	task.wait(4) -- tunggu game load
+	task.wait(3) -- tunggu game load
 
-	local currentJobId = game.JobId
-	if not currentJobId or currentJobId == "" then
-		print("[PS] JobId kosong, skip private server check")
-		return
-	end
+	local REGION = "Jakarta" -- minigame selalu Jakarta
 
 	print("[PS] Cek private server untuk:", player.Name)
 	local psData = apiGetPrivateServer(player.Name)
 
+	local jumpMode = "jump" -- default
+
 	if psData == nil then
-		print("[PS] Slot tidak ditemukan di API, skip")
-		return
-	end
-
-	local serverCode = psData.server_code
-	local jumpMode   = psData.jump_mode or "jump"
-
-	if serverCode and serverCode ~= "" then
-		-- Server sudah ada
-		if currentJobId == serverCode then
-			print("[PS] Sudah di server yang benar:", serverCode)
-		else
-			print("[PS] Server salah! Seharusnya:", serverCode, "| Sekarang:", currentJobId)
-			-- Coba teleport ke server yang benar
-			pcall(function()
-				local TeleportService = game:GetService("TeleportService")
-				TeleportService:TeleportToPlaceInstance(game.PlaceId, serverCode, player)
-			end)
-		end
+		-- User belum ada di dashboard, skip join tapi tetap auto-start
+		print("[PS] Slot tidak ditemukan di API, skip private server")
 	else
-		-- Belum ada server → daftarkan server sekarang
-		print("[PS] Belum ada server, daftarkan JobId saat ini:", currentJobId)
-		apiSetPrivateServer(player.Name, currentJobId, "Jakarta")
+		jumpMode = psData.jump_mode or "jump"
+		local serverCode = psData.server_code
+
+		if serverCode and serverCode ~= "" then
+			-- ✅ Server sudah ada → langsung join
+			print("[PS] Server ditemukan:", serverCode, "| Region:", REGION)
+			pcall(function()
+				psRemote:FireServer("Join", serverCode, REGION)
+			end)
+			print("[PS] FireServer Join berhasil")
+		else
+			-- ❌ Belum ada server → Create dulu
+			print("[PS] Belum ada server, membuat private server baru...")
+			pcall(function()
+				psRemote:FireServer("Create")
+			end)
+
+			-- Ambil code dari label GUI
+			task.wait(1) -- beri jeda sebelum baca label
+			local newCode = waitForServerLabel()
+
+			if newCode then
+				print("[PS] Code baru:", newCode)
+				-- Kirim ke API
+				apiSetPrivateServer(player.Name, newCode, REGION)
+				task.wait(0.5)
+				-- Join server baru
+				pcall(function()
+					psRemote:FireServer("Join", newCode, REGION)
+				end)
+				print("[PS] Join server baru berhasil")
+			else
+				print("[PS] Gagal ambil server code dari label, skip join")
+			end
+		end
 	end
 
 	-- Auto-start berdasarkan jump_mode dari dashboard
-	print("[PS] Jump mode dari API:", jumpMode)
+	task.wait(2) -- beri waktu server join selesai
+	print("[PS] Jump mode:", jumpMode)
 	if jumpMode == "nojump" then
-		print("[PS] Auto-start NOJUMP mode")
+		print("[PS] Auto-start NOJUMP")
 		loadstring(game:HttpGet(
 			"https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"
 		))()
 	else
-		print("[PS] Auto-start JUMP mode")
+		print("[PS] Auto-start JUMP")
 		loadstring(game:HttpGet(
 			"https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"
 		))()

@@ -136,8 +136,13 @@ local function apiUpdate(username, rawMoney)
 end
 
 -- ═══════════════════════════════════
---  PRIVATE SERVER HELPERS
+--  PRIVATE SERVER HELPERS (UANG)
 -- ═══════════════════════════════════
+local psRemote = game:GetService("ReplicatedStorage")
+    :WaitForChild("NetworkContainer")
+    :WaitForChild("RemoteEvents")
+    :WaitForChild("PrivateServer")
+
 local function apiGetPrivateServer(username)
     local result = nil
     pcall(function()
@@ -177,40 +182,73 @@ local function apiSetPrivateServer(username, serverCode)
     end)
 end
 
--- Cek & join private server untuk user uang
--- Dipanggil setelah serverLock, sebelum farm dimulai
-local function handlePrivateServer(username)
-    local currentJobId = game.JobId
-    if not currentJobId or currentJobId == "" then
-        print("[PS] JobId kosong, skip")
-        return
+-- Ambil server label dari PlayerGui setelah FireServer("Create")
+local function waitForServerLabel()
+    local label = nil
+    pcall(function()
+        label = player
+            :WaitForChild("PlayerGui")
+            :WaitForChild("Hub")
+            :WaitForChild("Container")
+            :WaitForChild("Window")
+            :WaitForChild("PrivateServer")
+            :WaitForChild("ServerLabel")
+    end)
+    if not label then return nil end
+    local t = 0
+    while (label.Text == nil or label.Text == "") and t < 15 do
+        task.wait(0.5)
+        t = t + 0.5
     end
+    return label.Text ~= "" and label.Text or nil
+end
 
-    print("[PS] Cek private server:", username)
+-- Cek & join private server uang (JawaTimur, server sendiri per user)
+local function handlePrivateServer(username)
+    local REGION = "JawaTimur"
+
+    print("[PS] Cek private server uang untuk:", username)
     local psData = apiGetPrivateServer(username)
 
     if psData == nil then
-        -- Slot belum ada di dashboard, cukup daftarkan server saat ini
-        apiSetPrivateServer(username, currentJobId)
+        -- Belum ada slot di dashboard → Create server dan daftar
+        print("[PS] Slot tidak ditemukan, membuat server baru...")
+        pcall(function() psRemote:FireServer("Create") end)
+        task.wait(1)
+        local newCode = waitForServerLabel()
+        if newCode then
+            print("[PS] Code baru:", newCode)
+            apiSetPrivateServer(username, newCode)
+            task.wait(0.5)
+            pcall(function() psRemote:FireServer("Join", newCode, REGION) end)
+        else
+            print("[PS] Gagal ambil server code, skip join")
+        end
         return
     end
 
     local serverCode = psData.server_code
 
     if serverCode and serverCode ~= "" then
-        if currentJobId == serverCode then
-            print("[PS] Sudah di server yang benar:", serverCode)
-        else
-            print("[PS] Server salah! Seharusnya:", serverCode, "| Sekarang:", currentJobId)
-            pcall(function()
-                local TeleportService = game:GetService("TeleportService")
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, serverCode, player)
-            end)
-        end
+        -- ✅ Server sudah ada → langsung join
+        print("[PS] Server ditemukan:", serverCode)
+        pcall(function() psRemote:FireServer("Join", serverCode, REGION) end)
+        print("[PS] Join berhasil")
     else
-        -- Belum ada server → daftarkan server saat ini
-        print("[PS] Daftarkan server baru:", currentJobId)
-        apiSetPrivateServer(username, currentJobId)
+        -- ❌ Slot ada tapi belum punya server → Create
+        print("[PS] Slot ada tapi belum ada server, membuat baru...")
+        pcall(function() psRemote:FireServer("Create") end)
+        task.wait(1)
+        local newCode = waitForServerLabel()
+        if newCode then
+            print("[PS] Code baru:", newCode)
+            apiSetPrivateServer(username, newCode)
+            task.wait(0.5)
+            pcall(function() psRemote:FireServer("Join", newCode, REGION) end)
+            print("[PS] Join server baru berhasil")
+        else
+            print("[PS] Gagal ambil server code, skip join")
+        end
     end
 end
 
