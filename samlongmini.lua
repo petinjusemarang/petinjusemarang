@@ -42,6 +42,51 @@ end
 -- ═══════════════════════════════════
 --  RAILWAY API HELPER
 -- ═══════════════════════════════════
+
+-- GET /api/private-server?username=xxx
+-- Returns: { group_id, slot_id, jenis, server_code, region, jump_mode } or nil
+local function apiGetPrivateServer(username)
+	local result = nil
+	pcall(function()
+		local req = (syn and syn.request) or (http and http.request) or request
+		if not req then return end
+		local encodedUser = HttpService:UrlEncode(username)
+		local resp = req({
+			Url = API_URL .. "/api/private-server?username=" .. encodedUser,
+			Method = "GET",
+			Headers = { ["x-api-key"] = API_KEY },
+		})
+		if resp and resp.StatusCode == 200 then
+			local ok, data = pcall(function() return HttpService:JSONDecode(resp.Body) end)
+			if ok then result = data end
+		end
+	end)
+	return result
+end
+
+-- POST /api/private-server  { username, server_code, region }
+-- Only sets code if slot doesn't already have one (backend enforces)
+local function apiSetPrivateServer(username, serverCode, region)
+	pcall(function()
+		local req = (syn and syn.request) or (http and http.request) or request
+		if not req then return end
+		req({
+			Url = API_URL .. "/api/private-server",
+			Method = "POST",
+			Headers = {
+				["Content-Type"] = "application/json",
+				["x-api-key"] = API_KEY,
+			},
+			Body = HttpService:JSONEncode({
+				username = username,
+				server_code = serverCode,
+				region = region or "Jakarta",
+			}),
+		})
+		print("[PS] Server code dikirim ke API:", serverCode)
+	end)
+end
+
 local function apiUpdate(username, rawPoints)
 	pcall(function()
 		local req = (syn and syn.request) or (http and http.request) or request
@@ -332,6 +377,62 @@ okBtn.MouseButton1Click:Connect(function()
 	lastPlayTime         = os.time()
 	lastPlayedLabel.Text = "Last: 0m 0s"
 	alerted              = false
+end)
+
+-- ═══════════════════════════════════
+--  PRIVATE SERVER AUTO JOIN
+-- ═══════════════════════════════════
+task.spawn(function()
+	task.wait(4) -- tunggu game load
+
+	local currentJobId = game.JobId
+	if not currentJobId or currentJobId == "" then
+		print("[PS] JobId kosong, skip private server check")
+		return
+	end
+
+	print("[PS] Cek private server untuk:", player.Name)
+	local psData = apiGetPrivateServer(player.Name)
+
+	if psData == nil then
+		print("[PS] Slot tidak ditemukan di API, skip")
+		return
+	end
+
+	local serverCode = psData.server_code
+	local jumpMode   = psData.jump_mode or "jump"
+
+	if serverCode and serverCode ~= "" then
+		-- Server sudah ada
+		if currentJobId == serverCode then
+			print("[PS] Sudah di server yang benar:", serverCode)
+		else
+			print("[PS] Server salah! Seharusnya:", serverCode, "| Sekarang:", currentJobId)
+			-- Coba teleport ke server yang benar
+			pcall(function()
+				local TeleportService = game:GetService("TeleportService")
+				TeleportService:TeleportToPlaceInstance(game.PlaceId, serverCode, player)
+			end)
+		end
+	else
+		-- Belum ada server → daftarkan server sekarang
+		print("[PS] Belum ada server, daftarkan JobId saat ini:", currentJobId)
+		apiSetPrivateServer(player.Name, currentJobId, "Jakarta")
+	end
+
+	-- Auto-start berdasarkan jump_mode dari dashboard
+	print("[PS] Jump mode dari API:", jumpMode)
+	if jumpMode == "nojump" then
+		print("[PS] Auto-start NOJUMP mode")
+		loadstring(game:HttpGet(
+			"https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/nojump.lua"
+		))()
+	else
+		print("[PS] Auto-start JUMP mode")
+		loadstring(game:HttpGet(
+			"https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/jump.lua"
+		))()
+	end
 end)
 
 -- SPAWN LOOPS

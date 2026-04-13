@@ -136,6 +136,85 @@ local function apiUpdate(username, rawMoney)
 end
 
 -- ═══════════════════════════════════
+--  PRIVATE SERVER HELPERS
+-- ═══════════════════════════════════
+local function apiGetPrivateServer(username)
+    local result = nil
+    pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or request
+        if not req then return end
+        local resp = req({
+            Url = API_URL .. "/api/private-server?username=" .. HttpService:UrlEncode(username),
+            Method = "GET",
+            Headers = { ["x-api-key"] = API_KEY },
+        })
+        if resp and resp.StatusCode == 200 then
+            local ok, data = pcall(function() return HttpService:JSONDecode(resp.Body) end)
+            if ok then result = data end
+        end
+    end)
+    return result
+end
+
+local function apiSetPrivateServer(username, serverCode)
+    pcall(function()
+        local req = (syn and syn.request) or (http and http.request) or request
+        if not req then return end
+        req({
+            Url = API_URL .. "/api/private-server",
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["x-api-key"] = API_KEY,
+            },
+            Body = HttpService:JSONEncode({
+                username = username,
+                server_code = serverCode,
+                region = "JawaTimur",
+            }),
+        })
+        print("[PS] Server code dikirim:", serverCode)
+    end)
+end
+
+-- Cek & join private server untuk user uang
+-- Dipanggil setelah serverLock, sebelum farm dimulai
+local function handlePrivateServer(username)
+    local currentJobId = game.JobId
+    if not currentJobId or currentJobId == "" then
+        print("[PS] JobId kosong, skip")
+        return
+    end
+
+    print("[PS] Cek private server:", username)
+    local psData = apiGetPrivateServer(username)
+
+    if psData == nil then
+        -- Slot belum ada di dashboard, cukup daftarkan server saat ini
+        apiSetPrivateServer(username, currentJobId)
+        return
+    end
+
+    local serverCode = psData.server_code
+
+    if serverCode and serverCode ~= "" then
+        if currentJobId == serverCode then
+            print("[PS] Sudah di server yang benar:", serverCode)
+        else
+            print("[PS] Server salah! Seharusnya:", serverCode, "| Sekarang:", currentJobId)
+            pcall(function()
+                local TeleportService = game:GetService("TeleportService")
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, serverCode, player)
+            end)
+        end
+    else
+        -- Belum ada server → daftarkan server saat ini
+        print("[PS] Daftarkan server baru:", currentJobId)
+        apiSetPrivateServer(username, currentJobId)
+    end
+end
+
+-- ═══════════════════════════════════
 --  SERVERLOCK
 -- ═══════════════════════════════════
 local function serverLock()
@@ -566,7 +645,8 @@ createButton("Limited Snipe", CONFIG.BgButton, CONFIG.BgBtnHover, function()
 end)
 
 createButton("Uang Jatim", CONFIG.BgBtnGreen, CONFIG.BgBtnGreenH, function()
-    serverLock() -- 🔒 pindahin ke sini
+    serverLock()
+    handlePrivateServer(player.Name) -- cek/daftar private server sebelum farm
     rootGui.Enabled = false
 
     mountJobOverlay("Mulai (Langsung start aaja)", function()

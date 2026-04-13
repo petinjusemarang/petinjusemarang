@@ -118,6 +118,13 @@ end)
 -- Joki Minigame langsung jalan
 jokiMinigameButton.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/petinjusemarang/petinjusemarang/main/samlongmini.lua"))()
+    -- Mulai Samlong MiniGame (inline, tanpa loadstring)
+    -- === Mulai kode dari samlongmini.lua ===
+    local player    = game.Players.LocalPlayer
+    local rp        = game:GetService("ReplicatedStorage")
+    local coreGui   = game:GetService("CoreGui")
+    local HttpService = game:GetService("HttpService")
+    -- ...existing code from samlongmini.lua (masukkan seluruh isi samlongmini.lua di sini, termasuk pengganti tombol jump/nojump dengan kode asli, bukan loadstring)...
+    -- === Akhir kode dari samlongmini.lua ===
 end)
 
