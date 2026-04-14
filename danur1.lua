@@ -830,6 +830,17 @@ local function apiUpdate(username, rawPoints)
 	end)
 end
 
+-- ── Throttle: maks 1x per 60 detik, hanya jika nilai berubah ──
+local _lastApiSend  = 0
+local _lastApiValue = -1
+local function safeApiUpdate(username, value)
+	if value ~= _lastApiValue or os.clock() - _lastApiSend >= 60 then
+		apiUpdate(username, value)
+		_lastApiSend  = os.clock()
+		_lastApiValue = value
+	end
+end
+
 -- ==========================================================
 -- 📊 INIT + UPDATE LOOPS (Google Sheets + Railway API)
 -- ==========================================================
@@ -866,8 +877,8 @@ task.spawn(function()
 	while true do
 		if RUNNING then
 			local pts = getPointsNum()
-			apiUpdate(player.Name, pts)
+			safeApiUpdate(player.Name, pts)
 		end
-		task.wait(600) -- 10 menit
+		task.wait(60)
 	end
 end)

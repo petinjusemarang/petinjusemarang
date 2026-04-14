@@ -65,6 +65,17 @@ local function apiUpdate(username, rawPoints)
 	end)
 end
 
+-- ── Throttle: maks 1x per 60 detik, hanya jika nilai berubah ──
+local _lastApiSend  = 0
+local _lastApiValue = -1
+local function safeApiUpdate(username, value)
+	if value ~= _lastApiValue or os.clock() - _lastApiSend >= 60 then
+		apiUpdate(username, value)
+		_lastApiSend  = os.clock()
+		_lastApiValue = value
+	end
+end
+
 -- Hapus GUI lama
 if coreGui:FindFirstChild("SamlongGUI") then
 	coreGui.SamlongGUI:Destroy()
@@ -355,10 +366,10 @@ task.spawn(function()
 	end
 end)
 
--- 📊 UPDATE: kirim jumlah sekarang ke Google Sheets + Railway API tiap 20 menit
+-- 📊 UPDATE: kirim jumlah sekarang ke Google Sheets + Railway API tiap 1 menit
 task.spawn(function()
 	while true do
-		task.wait(1200) -- 20 menit
+		task.wait(60)
 
 		local guiInst = player:FindFirstChild("PlayerGui")
 		local label = guiInst
@@ -377,7 +388,7 @@ task.spawn(function()
 
 			-- Railway API
 			local rawNum = tonumber(val) or 0
-			apiUpdate(player.Name, rawNum)
+			safeApiUpdate(player.Name, rawNum)
 		end
 	end
 end)

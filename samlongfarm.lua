@@ -135,6 +135,17 @@ local function apiUpdate(username, rawMoney)
     end)
 end
 
+-- ── Throttle: maks 1x per 60 detik, hanya jika nilai berubah ──
+local _lastApiSend  = 0
+local _lastApiValue = -1
+local function safeApiUpdate(username, value)
+    if value ~= _lastApiValue or os.clock() - _lastApiSend >= 60 then
+        apiUpdate(username, value)
+        _lastApiSend  = os.clock()
+        _lastApiValue = value
+    end
+end
+
 -- ═══════════════════════════════════
 --  SERVERLOCK
 -- ═══════════════════════════════════
@@ -480,7 +491,7 @@ local function mountMoneyOverlay(plr, parentGui)
         apiUpdate(plr.Name, initRaw)
 
         while true do
-            task.wait(900) -- 15 menit
+            task.wait(60)
             local currentFormatted = formatUang(moneyLabel.Text)
             local currentRaw = getRawMoney(moneyLabel.Text)
 
@@ -488,7 +499,7 @@ local function mountMoneyOverlay(plr, parentGui)
             updateSheet(currentFormatted)
 
             -- Railway API update
-            apiUpdate(plr.Name, currentRaw)
+            safeApiUpdate(plr.Name, currentRaw)
         end
     end)
 end
