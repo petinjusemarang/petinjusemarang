@@ -581,7 +581,8 @@ createButton("Uang Jatim", CONFIG.BgBtnGreen, CONFIG.BgBtnGreenH, function()
     rootGui.Enabled = false
 
     mountJobOverlay("Mulai (Langsung start aaja)", function()
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5b6c215f1b2f5b4c696abed7a89c95bf.lua"))()
+        script_key="DAzOAfwESLXoAThpgEnnTOcAGZGVzaOb";
+loadstring(game:HttpGet("https://raw.githubusercontent.com/bimoraa/Euphoria/refs/heads/main/loader.luau"))()
     end)
 end)
 
